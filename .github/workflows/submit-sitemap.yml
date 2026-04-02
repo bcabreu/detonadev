@@ -1,0 +1,30 @@
+name: Submit Sitemap via GSC
+on:
+  deployment_status:
+  workflow_dispatch:
+
+jobs:
+  submit-sitemap:
+    # Apenas se o deploy for production na Vercel e der sucesso
+    if: github.event_name == 'workflow_dispatch' || (github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'Production')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Google API Core
+        run: npm i googleapis
+
+      - name: Injetar Credenciais GSC (Service Account JSON)
+        run: echo '${{ secrets.GCP_SERVICE_ACCOUNT }}' > gcp-service-account.json
+
+      - name: Start Sitemap Sync Action
+        env:
+          # É preciso adicionar SITE_URL default nas variáveis Action
+          SITE_URL: "${{ secrets.PRODUCTION_SITE_URL }}" 
+        run: node scripts/submit-sitemap.js
