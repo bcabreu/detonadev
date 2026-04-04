@@ -5,8 +5,8 @@ on:
 
 jobs:
   submit-sitemap:
-    # Apenas se o deploy for production na Vercel e der sucesso
-    if: github.event_name == 'workflow_dispatch' || (github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'Production')
+    # Apenas se o deploy for em ambiente de produção (Vercel/Netlify) e der sucesso
+    if: github.event_name == 'workflow_dispatch' || (github.event.deployment_status.state == 'success' && (github.event.deployment.environment == 'Production' || github.event.deployment.environment == 'production'))
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
