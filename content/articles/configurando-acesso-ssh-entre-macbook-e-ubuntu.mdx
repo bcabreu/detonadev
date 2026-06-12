@@ -1,0 +1,643 @@
+---
+title: "Configurando acesso SSH entre MacBook e Ubuntu no meu laboratório de cibersegurança"
+summary: "Neste laboratório, configurei o acesso remoto via SSH entre um MacBook e uma máquina Ubuntu na rede local. O objetivo foi praticar conceitos de IP, portas, serviço SSH, firewall UFW e diagnóstico de conectividade."
+date: "2026-06-11"
+readTime: "14 min"
+status: "publicado"
+categories:
+  - home-lab
+  - linux
+  - redes
+  - ssh
+  - firewall
+---
+
+Este primeiro laboratório do DetonaDev Cyber Lab documenta a configuração de acesso remoto via SSH entre um MacBook e uma máquina Ubuntu conectados à mesma rede local.
+
+O objetivo foi praticar conceitos fundamentais para cibersegurança e administração de sistemas: endereço IP, interface de rede, portas, serviço SSH, firewall, conectividade e diagnóstico de problemas.
+
+Este artigo documenta não apenas os comandos executados, mas também o raciocínio usado para entender o problema e chegar à solução.
+
+## 1. Objetivo do laboratório
+
+O objetivo deste laboratório foi permitir que meu MacBook acessasse uma máquina Ubuntu pela rede local usando SSH.
+
+Na prática, eu queria sair deste cenário:
+
+```text
+MacBook e Ubuntu conectados à mesma rede, mas sem acesso remoto funcionando
+```
+
+Para este cenário:
+
+```text
+MacBook  --->  SSH  --->  Ubuntu Linux
+```
+
+Com isso, seria possível administrar o Ubuntu remotamente pelo terminal do MacBook.
+
+Esse tipo de acesso é muito comum em ambientes Linux, servidores, infraestrutura, nuvem, DevOps e segurança da informação.
+
+## 2. Ambiente utilizado
+
+O ambiente utilizado foi simples e local:
+
+```text
+Máquina cliente: MacBook Air
+Máquina servidor: Ubuntu 24.04.4 LTS
+Rede: Wi-Fi local
+IP do Ubuntu: 192.168.1.78
+Interface Wi-Fi do Ubuntu: wlp3s0
+Serviço remoto: OpenSSH Server
+Firewall: UFW
+Porta utilizada pelo SSH: 22/TCP
+```
+
+O Ubuntu estava instalado em uma máquina própria e conectado à rede Wi-Fi por uma placa PCI Express Wi-Fi.
+
+O MacBook foi usado como máquina cliente, ou seja, a máquina que tentaria acessar o Ubuntu remotamente.
+
+## 3. Conceitos envolvidos
+
+Antes de executar os comandos, é importante entender os principais conceitos envolvidos.
+
+### IP
+
+O endereço IP identifica uma máquina dentro da rede.
+
+Neste laboratório, o Ubuntu recebeu o IP:
+
+```text
+192.168.1.78
+```
+
+Esse foi o endereço usado pelo MacBook para tentar encontrar e acessar a máquina Linux na rede local.
+
+### Interface de rede
+
+A interface de rede é o dispositivo lógico ou físico usado para conexão.
+
+No Linux, interfaces podem aparecer com nomes como:
+
+```text
+lo
+eno1
+wlp3s0
+docker0
+br-...
+veth...
+```
+
+Neste laboratório, a interface importante era:
+
+```text
+wlp3s0
+```
+
+Essa era a interface Wi-Fi da máquina Ubuntu.
+
+### Porta
+
+Uma porta identifica um serviço dentro de uma máquina.
+
+Exemplos comuns:
+
+```text
+22   = SSH
+80   = HTTP
+443  = HTTPS
+8080 = aplicação web alternativa
+```
+
+Neste laboratório, o serviço SSH usa a porta:
+
+```text
+22/TCP
+```
+
+### SSH
+
+SSH significa Secure Shell.
+
+É um protocolo usado para acessar e administrar sistemas remotamente de forma segura. Ele é muito usado para gerenciar servidores Linux, acessar máquinas remotas e executar comandos em ambientes de infraestrutura.
+
+Quando usamos este comando:
+
+```bash
+ssh bruno-abreu@192.168.1.78
+```
+
+Estamos dizendo:
+
+```text
+Conectar via SSH no usuário bruno-abreu da máquina com IP 192.168.1.78
+```
+
+Por padrão, o SSH tenta conectar na porta 22.
+
+### Firewall
+
+O firewall controla quais conexões podem entrar ou sair de uma máquina.
+
+No Ubuntu, usei o UFW, que significa Uncomplicated Firewall.
+
+Um ponto importante deste laboratório foi entender que um serviço pode estar ativo, mas ainda assim inacessível se o firewall estiver bloqueando a porta usada por ele.
+
+## 4. Identificando o IP do Ubuntu
+
+Primeiro, precisei descobrir qual era o IP da máquina Ubuntu na rede local.
+
+No Ubuntu, executei:
+
+```bash
+ip a
+```
+
+Esse comando lista as interfaces de rede e os endereços IP associados a cada uma.
+
+No resultado, a interface relevante foi:
+
+```text
+wlp3s0
+inet 192.168.1.78/24
+```
+
+Isso indicou que:
+
+```text
+Interface Wi-Fi: wlp3s0
+IP do Ubuntu: 192.168.1.78
+Rede local: 192.168.1.0/24
+```
+
+<ArticleImage
+  src="/images/articles/configurando-acesso-ssh-entre-macbook-e-ubuntu/01-ip-a-ubuntu.png"
+  alt="Resultado do comando ip a mostrando o IP da interface Wi-Fi do Ubuntu"
+  caption="Identificação do IP 192.168.1.78 na interface Wi-Fi wlp3s0 do Ubuntu."
+/>
+
+Também executei:
+
+```bash
+hostname -I
+```
+
+Esse comando mostra os endereços IP atribuídos à máquina de forma mais direta.
+
+O resultado confirmou o IP principal do Ubuntu:
+
+```text
+192.168.1.78
+```
+
+<ArticleImage
+  src="/images/articles/configurando-acesso-ssh-entre-macbook-e-ubuntu/02-hostname-i-ubuntu.png"
+  alt="Resultado do comando hostname -I mostrando os endereços IP da máquina Ubuntu"
+  caption="Confirmação do IP principal do Ubuntu usando o comando hostname -I."
+/>
+
+No resultado também apareceram endereços como:
+
+```text
+172.17.0.1
+172.18.0.1
+172.19.0.1
+```
+
+Esses IPs estavam relacionados a redes internas do Docker e não eram o foco deste laboratório.
+
+Para o acesso pelo MacBook, o IP correto era:
+
+```text
+192.168.1.78
+```
+
+## 5. Instalando e ativando o SSH no Ubuntu
+
+Para que o MacBook pudesse acessar o Ubuntu remotamente, o servidor SSH precisava estar instalado e em execução.
+
+No Ubuntu, executei:
+
+```bash
+sudo apt update
+```
+
+Esse comando atualiza a lista de pacotes disponíveis.
+
+Depois instalei o OpenSSH Server:
+
+```bash
+sudo apt install openssh-server -y
+```
+
+Em seguida, habilitei o serviço SSH para iniciar automaticamente com o sistema:
+
+```bash
+sudo systemctl enable ssh
+```
+
+Depois iniciei o serviço:
+
+```bash
+sudo systemctl start ssh
+```
+
+Para validar se o SSH estava realmente rodando, executei:
+
+```bash
+sudo systemctl status ssh --no-pager
+```
+
+O resultado mostrou:
+
+```text
+Active: active (running)
+Server listening on 0.0.0.0 port 22
+Server listening on :: port 22
+```
+
+Isso confirmou que:
+
+```text
+O serviço SSH estava ativo.
+O SSH estava escutando conexões na porta 22.
+```
+
+<ArticleImage
+  src="/images/articles/configurando-acesso-ssh-entre-macbook-e-ubuntu/03-ssh-status-active.png"
+  alt="Status do serviço SSH no Ubuntu mostrando active running e porta 22"
+  caption="Validação do OpenSSH Server ativo e escutando conexões na porta 22."
+/>
+
+Nesse ponto, o SSH estava funcionando na máquina Ubuntu.
+
+## 6. Testando SSH localmente no Ubuntu
+
+Antes de testar pelo MacBook, fiz um teste local dentro do próprio Ubuntu.
+
+Executei:
+
+```bash
+ssh bruno-abreu@localhost
+```
+
+O localhost representa a própria máquina.
+
+O sistema exibiu uma mensagem sobre a autenticidade do host:
+
+```text
+The authenticity of host 'localhost (127.0.0.1)' can't be established.
+Are you sure you want to continue connecting?
+```
+
+Respondi:
+
+```text
+yes
+```
+
+Depois informei a senha do usuário do Ubuntu.
+
+O acesso funcionou, o que mostrou que o serviço SSH estava aceitando conexões localmente.
+
+Esse teste foi importante porque separou dois problemas possíveis:
+
+```text
+Se o SSH falhasse localmente, o problema estaria no próprio serviço SSH.
+Como o SSH funcionou localmente, o problema provavelmente estaria na rede ou no firewall.
+```
+
+## 7. Verificando o firewall UFW antes da correção
+
+Depois de confirmar que o SSH estava ativo, verifiquei o firewall do Ubuntu.
+
+Executei:
+
+```bash
+sudo ufw status
+```
+
+O resultado mostrou:
+
+```text
+Estado: ativo
+
+8080                       ALLOW       Anywhere
+8080 (v6)                  ALLOW       Anywhere (v6)
+```
+
+Isso indicava que o firewall UFW estava ativo, mas apenas a porta 8080 estava liberada.
+
+A porta 22, usada pelo SSH, não aparecia na lista.
+
+<ArticleImage
+  src="/images/articles/configurando-acesso-ssh-entre-macbook-e-ubuntu/04-ufw-status-before.png"
+  alt="Status do firewall UFW antes da correção mostrando apenas a porta 8080 liberada"
+  caption="Firewall UFW ativo permitindo apenas a porta 8080 antes da liberação do SSH."
+/>
+
+Esse foi um ponto importante do diagnóstico.
+
+O SSH estava ativo, mas o firewall não permitia conexões externas na porta 22.
+
+## 8. Testando conectividade pelo MacBook
+
+No MacBook, primeiro testei se a máquina Ubuntu respondia na rede.
+
+Executei:
+
+```bash
+ping 192.168.1.78
+```
+
+O resultado mostrou respostas da máquina Ubuntu na rede:
+
+```text
+64 bytes from 192.168.1.78
+```
+
+ao final do teste, o resultado indicou:
+
+```text
+12 packets transmitted, 12 received, 0.0% packet loss
+```
+
+Isso mostrou que o MacBook conseguia alcançar o IP do Ubuntu pela rede local, ou seja, havia conectividade entre as duas máquina.
+
+<ArticleImage
+  src="/images/articles/configurando-acesso-ssh-entre-macbook-e-ubuntu/05-ping-macbook.png"
+  alt="Teste de ping no MacBook para o IP do Ubuntu"
+  caption="Teste de conectividade do MacBook para o Ubuntu usando ping."
+/>
+
+Depois tentei acessar via SSH:
+
+```bash
+ssh bruno-abreu@192.168.1.78
+```
+
+O resultado foi:
+
+```text
+ssh: connect to host 192.168.1.78 port 22: Operation timed out
+```
+
+<ArticleImage
+  src="/images/articles/configurando-acesso-ssh-entre-macbook-e-ubuntu/06-ssh-timeout-macbook.png"
+  alt="Tentativa de conexão SSH pelo MacBook falhando com Operation timed out"
+  caption="Tentativa de conexão SSH pelo MacBook falhando com timeout antes da liberação da porta 22."
+/>
+
+Esse erro mostrou que o MacBook estava tentando acessar o Ubuntu na porta 22, mas a conexão não era completada.
+
+## 9. Problema encontrado
+
+O problema encontrado foi:
+
+```text
+O ping funcionava, mas o SSH dava timeout.
+```
+
+Isso indicava que:
+
+```text
+O MacBook conseguia alcançar o IP do Ubuntu.
+O serviço SSH estava ativo no Ubuntu.
+Mas a porta 22 não estava acessível a partir da rede.
+```
+
+Nesse cenário, uma causa provável era o firewall bloqueando a porta 22.
+
+O diagnóstico começou a apontar para o UFW.
+
+## 10. Diagnóstico
+
+O raciocínio foi o seguinte:
+
+Primeiro, confirmei que o Ubuntu tinha um IP válido na rede local:
+
+```text
+192.168.1.78
+```
+
+Depois, confirmei que o serviço SSH estava ativo:
+
+```text
+Active: active (running)
+Server listening on 0.0.0.0 port 22
+```
+
+Depois, confirmei que o MacBook conseguia alcançar o IP com ping.
+
+Por fim, verifiquei o UFW e percebi que apenas a porta 8080 estava liberada.
+
+Então o cenário ficou claro:
+
+```text
+SSH ativo na porta 22
+Firewall UFW ativo
+Porta 22 não liberada
+MacBook tentando conectar
+Conexão expirando com timeout
+```
+
+Conclusão:
+
+```text
+O problema não era o SSH desligado.
+O problema era o firewall bloqueando o acesso externo à porta 22.
+```
+
+## 11. Solução aplicada
+
+Para resolver, eu precisava liberar a porta 22 no firewall.
+
+Mas em vez de liberar SSH para qualquer origem, apliquei uma regra mais restrita, permitindo acesso apenas da minha rede local.
+
+Executei no Ubuntu:
+
+```bash
+sudo ufw allow from 192.168.1.0/24 to any port 22 proto tcp
+```
+
+Esse comando pode ser dividido assim:
+
+```text
+sudo                   Executa o comando com permissão de administrador.
+ufw                    Ferramenta de firewall do Ubuntu.
+allow                  Cria uma regra permitindo tráfego.
+from 192.168.1.0/24    Permite conexões vindas da rede local 192.168.1.x.
+to any port 22         Permite conexão para a porta 22 desta máquina.
+proto tcp              Define que a regra é para o protocolo TCP.
+```
+
+<ArticleImage
+  src="/images/articles/configurando-acesso-ssh-entre-macbook-e-ubuntu/07-ufw-allow-ssh-local-network.png"
+  alt="Comando UFW liberando SSH apenas para a rede local"
+  caption="Regra criada no UFW para permitir SSH apenas a partir da rede local 192.168.1.0/24."
+/>
+
+Essa abordagem é melhor do que simplesmente executar:
+
+```bash
+sudo ufw allow ssh
+```
+
+Porque a regra usada limita o acesso ao SSH apenas a dispositivos da rede local.
+
+Ou seja, o acesso foi permitido para a rede:
+
+```text
+192.168.1.0/24
+```
+
+E não para qualquer origem.
+
+## 12. Validando a regra no firewall
+
+Depois de criar a regra, conferi novamente o firewall:
+
+```bash
+sudo ufw status
+```
+
+Agora, a regra da porta 22 deveria aparecer permitindo acesso a partir da rede local.
+
+O resultado esperado era algo parecido com:
+
+```text
+22/tcp                     ALLOW       192.168.1.0/24
+8080                       ALLOW       Anywhere
+```
+
+<ArticleImage
+  src="/images/articles/configurando-acesso-ssh-entre-macbook-e-ubuntu/08-ufw-status-after.png"
+  alt="Status do firewall UFW depois da liberação da porta 22 para a rede local"
+  caption="Firewall UFW após a criação da regra permitindo SSH a partir da rede local."
+/>
+
+Essa validação foi importante porque confirmou que o firewall agora permitia conexões SSH vindas da rede local.
+
+## 13. Validando o acesso SSH pelo MacBook
+
+Com o firewall ajustado, tentei novamente a conexão pelo MacBook:
+
+```bash
+ssh bruno-abreu@192.168.1.78
+```
+
+Desta vez, o terminal mostrou a mensagem de autenticidade do host:
+
+```text
+The authenticity of host '192.168.1.78' can't be established.
+Are you sure you want to continue connecting?
+```
+
+Respondi:
+
+```text
+yes
+```
+
+Depois informei a senha do usuário do Ubuntu.
+
+A conexão funcionou e o terminal exibiu:
+
+```text
+Welcome to Ubuntu 24.04.4 LTS
+```
+
+<ArticleImage
+  src="/images/articles/configurando-acesso-ssh-entre-macbook-e-ubuntu/09-ssh-success-macbook.png"
+  alt="Conexão SSH bem-sucedida do MacBook para o Ubuntu"
+  caption="Conexão SSH bem-sucedida do MacBook para o Ubuntu na rede local."
+/>
+
+Isso confirmou que o MacBook conseguiu acessar o Ubuntu via SSH pela rede local.
+
+O cenário final ficou assim:
+
+```text
+MacBook
+  |
+  | SSH pela porta 22/TCP
+  | Rede local Wi-Fi
+  |
+  ↓
+Ubuntu Linux - 192.168.1.78
+```
+
+## 14. O que aprendi
+
+Neste laboratório, pratiquei e entendi os seguintes pontos:
+
+```text
+Como identificar o IP de uma máquina Linux.
+Como diferenciar a interface Wi-Fi real de interfaces internas do Docker.
+Como instalar e ativar o OpenSSH Server.
+Como verificar se um serviço está ativo com systemctl.
+Como testar conectividade com ping.
+Como interpretar um erro de timeout no SSH.
+Como verificar regras do firewall UFW.
+Como liberar SSH apenas para a rede local.
+Como validar o acesso remoto de um MacBook para um Ubuntu.
+```
+
+A principal lição foi:
+
+```text
+Um serviço pode estar ativo, mas ainda assim inacessível
+se o firewall estiver bloqueando a porta.
+```
+
+Neste caso, o SSH estava ativo e escutando na porta 22, mas o UFW não permitia conexões externas nessa porta.
+
+## 15. Relação com cibersegurança e SOC
+
+Este laboratório se conecta diretamente com fundamentos de cibersegurança.
+
+Um analista de segurança precisa entender conceitos como:
+
+```text
+IP
+Portas
+Protocolos
+Serviços
+Firewall
+Conectividade
+Logs
+Acesso remoto
+Superfície de exposição
+Diagnóstico de rede
+```
+
+Em ambientes reais, problemas parecidos podem acontecer com servidores, estações de trabalho, firewalls, regras de rede e serviços internos.
+
+Além disso, em SOC, é comum investigar eventos relacionados a:
+
+```text
+Tentativas de login
+Acessos remotos
+Falhas de autenticação
+Origem das conexões
+Portas expostas
+Serviços acessíveis na rede
+```
+
+Este laboratório foi um primeiro passo para entender como uma conexão remota funciona, como um firewall pode bloquear um serviço e como validar tecnicamente uma correção.
+
+## 16. Próximo passo
+
+O próximo passo será analisar os logs gerados por essa conexão SSH.
+
+A pergunta principal do próximo laboratório será:
+
+```text
+Quando alguém acessa meu Linux via SSH, onde esse evento fica registrado?
+```
+
+Isso levará ao próximo estudo do DetonaDev Cyber Lab:
+
+```text
+Analisando logs de autenticação SSH no Linux
+```

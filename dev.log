@@ -1,0 +1,38 @@
+
+> detonadev@1.0.0 dev
+> next dev
+
+ ⚠ Port 3000 is in use, trying 3001 instead.
+   ▲ Next.js 15.1.4
+   - Local:        http://localhost:3001
+   - Network:      http://192.168.1.4:3001
+
+ ✓ Starting...
+ ✓ Ready in 1165ms
+ ○ Compiling / ...
+ ✓ Compiled / in 894ms (649 modules)
+ GET / 200 in 1178ms
+ ✓ Compiled /artigos in 337ms (676 modules)
+ GET /artigos 200 in 417ms
+ ✓ Compiled /artigos/[slug] in 193ms (697 modules)
+ GET /artigos/configurando-acesso-ssh-entre-macbook-e-ubuntu 200 in 815ms
+ GET /artigos 200 in 30ms
+ ✓ Compiled /lab in 179ms (704 modules)
+ GET /lab 200 in 241ms
+ GET /artigos/configurando-acesso-ssh-entre-macbook-e-ubuntu 200 in 38ms
+ GET / 200 in 35ms
+ GET / 200 in 25ms
+ ✓ Compiled /_not-found in 358ms (708 modules)
+ GET /curriculo.pdf 404 in 475ms
+ GET / 200 in 39ms
+ GET / 200 in 86ms
+ ○ Compiling /contato ...
+ ✓ Compiled /contato in 612ms (712 modules)
+ GET /contato 200 in 791ms
+ ✓ Compiled in 2.8s (726 modules)
+ GET /contato 200 in 244ms
+ GET / 200 in 255ms
+ ✓ Compiled in 665ms (726 modules)
+ GET / 200 in 197ms
+ GET / 200 in 110ms
+[?25h

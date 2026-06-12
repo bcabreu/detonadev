@@ -1,108 +1,227 @@
 @import "tailwindcss";
 
+/* ─── Design System: Terminal Editorial ─── */
+
 @theme {
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --font-sans: 'Geist', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Geist Mono', ui-monospace, monospace;
 
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
+  --color-bg-deep: #0a0f1a;
+  --color-bg-surface: #111827;
+  --color-bg-surface-2: #1a2332;
+  --color-bg-surface-3: #1f2b3d;
 
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
+  --color-border: rgba(255, 255, 255, 0.06);
+  --color-border-accent: rgba(16, 185, 129, 0.3);
 
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
+  --color-text-primary: #e5e7eb;
+  --color-text-secondary: #9ca3af;
+  --color-text-muted: #6b7280;
 
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: #10b981;
+  --color-accent-dim: #059669;
+  --color-accent-glow: rgba(16, 185, 129, 0.1);
 
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
+  --color-status-done: #10b981;
+  --color-status-progress: #f59e0b;
+  --color-status-planned: #6b7280;
 
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-
-  --radius-lg: var(--radius);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-sm: calc(var(--radius) - 4px);
-  
-  --font-sans: var(--font-sans);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@layer base {
-  :root {
-    --background: #ffffff;
-    --foreground: #09090b;
-
-    --card: #ffffff;
-    --card-foreground: #09090b;
-    --popover: #ffffff;
-    --popover-foreground: #09090b;
-
-    --primary: #18181b; /* Neutro sofisticado que será trocado por cliente */
-    --primary-foreground: #fafafa;
-
-    --secondary: #f4f4f5;
-    --secondary-foreground: #18181b;
-
-    --muted: #f4f4f5;
-    --muted-foreground: #71717a;
-
-    --accent: #f4f4f5;
-    --accent-foreground: #18181b;
-
-    --destructive: #ef4444;
-    --destructive-foreground: #fafafa;
-
-    --border: #e4e4e7;
-    --input: #e4e4e7;
-    --ring: #18181b;
-    --radius: 0.5rem;
-
-    --font-sans: 'Inter', system-ui, sans-serif;
-  }
-
-  .dark {
-    --background: #09090b;
-    --foreground: #fafafa;
-
-    --card: #09090b;
-    --card-foreground: #fafafa;
-    --popover: #09090b;
-    --popover-foreground: #fafafa;
-
-    --primary: #fafafa;
-    --primary-foreground: #18181b;
-
-    --secondary: #27272a;
-    --secondary-foreground: #fafafa;
-
-    --muted: #27272a;
-    --muted-foreground: #1a1aa;
-
-    --accent: #27272a;
-    --accent-foreground: #fafafa;
-
-    --destructive: #7f1d1d;
-    --destructive-foreground: #fafafa;
-
-    --border: #27272a;
-    --input: #27272a;
-    --ring: #d4d4d8;
-  }
-}
+/* ─── Base ─── */
 
 @layer base {
   * {
-    @apply border-border;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
   }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    font-family: var(--font-sans);
+    background-color: var(--color-bg-deep);
+    color: var(--color-text-primary);
+    line-height: 1.7;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Selection */
+  ::selection {
+    background-color: rgba(16, 185, 129, 0.25);
+    color: #fff;
+  }
+
+  /* Scrollbar — sutil, técnico */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-bg-deep);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-bg-surface-3);
+    border-radius: 0;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-text-muted);
+  }
+
+  /* Focus ring */
+  :focus-visible {
+    outline: 1.5px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+}
+
+/* ─── Typography ─── */
+
+@layer base {
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    line-height: 1.2;
+    color: var(--color-text-primary);
+  }
+
+  p {
+    max-width: 65ch;
+    color: var(--color-text-secondary);
+  }
+
+  a {
+    color: var(--color-accent);
+    text-decoration: none;
+    transition: color 0.2s var(--ease-out-expo);
+  }
+  a:hover {
+    color: #34d399;
+  }
+
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+    background: var(--color-bg-surface);
+    border: 1px solid var(--color-border);
+    padding: 0.15em 0.4em;
+    border-radius: 2px;
+  }
+
+  pre {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    background: var(--color-bg-surface);
+    border: 1px solid var(--color-border);
+    border-left: 2px solid var(--color-accent-dim);
+    padding: 1.25rem 1.5rem;
+    overflow-x: auto;
+    line-height: 1.6;
+    border-radius: 0;
+  }
+
+  pre code {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: inherit;
+  }
+}
+
+/* ─── Utilities ─── */
+
+@layer utilities {
+  .container-narrow {
+    max-width: 1120px;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+
+  .section-spacing {
+    padding-block: 5rem;
+  }
+
+  @media (min-width: 768px) {
+    .section-spacing {
+      padding-block: 7rem;
+    }
+  }
+
+  /* Eyebrow label — small technical tag */
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--color-accent);
+    border: 1px solid var(--color-border-accent);
+    padding: 0.3rem 0.75rem;
+    border-radius: 0;
+    background: var(--color-accent-glow);
+  }
+
+  /* Terminal-style blinking cursor */
+  .cursor-blink::after {
+    content: '▊';
+    animation: blink 1s step-end infinite;
+    color: var(--color-accent);
+    margin-left: 2px;
+    font-weight: 400;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  /* Scroll reveal — CSS only, performant */
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.7s var(--ease-out-expo), transform 0.7s var(--ease-out-expo);
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Stagger children */
+  .stagger > .reveal:nth-child(1) { transition-delay: 0ms; }
+  .stagger > .reveal:nth-child(2) { transition-delay: 80ms; }
+  .stagger > .reveal:nth-child(3) { transition-delay: 160ms; }
+  .stagger > .reveal:nth-child(4) { transition-delay: 240ms; }
+  .stagger > .reveal:nth-child(5) { transition-delay: 320ms; }
+  .stagger > .reveal:nth-child(6) { transition-delay: 400ms; }
+
+  /* Divider */
+  .divider {
+    border: none;
+    height: 1px;
+    background: var(--color-border);
+    margin-block: 3rem;
+  }
+}
+
+/* ─── Reduced motion ─── */
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .cursor-blink::after {
+    animation: none;
   }
 }

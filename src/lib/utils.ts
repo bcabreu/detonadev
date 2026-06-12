@@ -1,10 +1,11 @@
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
+export function cn(...classes: (string | undefined | false | null)[]): string {
+  return classes.filter(Boolean).join(' ');
+}
 
-/**
- * Utilitário para combinar de forma inteligence classes Tailwind
- * e lidar com conflitos (essencial para componentes flexíveis).
- */
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
+export function formatDate(dateString: string): string {
+  return new Date(dateString + 'T12:00:00').toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  });
 }
