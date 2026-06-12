@@ -1,0 +1,11 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+# Redirect Netlify default subdomain to primary domain (301 permanent)
+# Prevents duplicate content between detonadev.netlify.app and detonadev.com
+[[redirects]]
+  from = "https://detonadev.netlify.app/*"
+  to = "https://detonadev.com/:splat"
+  status = 301
+  force = true
