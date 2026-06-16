@@ -256,7 +256,7 @@ export default function HomePage() {
                 Este laboratório documenta minha evolução prática em cibersegurança. A proposta é demonstrar domínio progressivo de fundamentos como Linux, redes, SSH, firewall, logs, análise de eventos, ferramentas de segurança e conceitos de SOC.
               </p>
               <p className="text-[var(--color-text-secondary)] leading-relaxed mb-8">
-                Cada artigo registra o objetivo, o ambiente, o problema, o diagnóstico, a solução e o aprendizado. Este não é um blog de notícias — é um registro técnico de estudos reais.
+                Cada artigo registra o objetivo, o ambiente, o problema, o diagnóstico, a solução e o aprendizado. Este não é um blog de notícias é um registro técnico de estudos reais.
               </p>
 
               <div className="flex flex-wrap gap-2 mb-8">
