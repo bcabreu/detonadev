@@ -32,7 +32,7 @@ export const labStages: LabStage[] = [
     description:
       'Análise de logs de autenticação SSH no Linux. Entendendo eventos de login, falhas, IPs de origem e a importância dos logs para SOC.',
     tools: ['journalctl', 'auth.log', 'syslog'],
-    status: 'em-andamento',
+    status: 'documentado',
     articleSlug: 'analisando-logs-de-autenticacao-ssh-no-linux',
   },
   {

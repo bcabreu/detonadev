@@ -10,7 +10,7 @@ export const siteConfig = {
     name: 'Bruno Abreu',
     role: 'Graduado em Sistemas de Informação e Economia — Em transição para Cibersegurança',
     email: 'contato@detonadev.com',
-    linkedin: 'https://www.linkedin.com/in/bruno-abreu-335328403',
+    linkedin: 'https://www.linkedin.com/in/bcabreu',
     github: '', // Manter vazio para esconder o link na UI
     resumeUrl: '/curriculo.pdf', // Adicione o caminho do PDF ou link do drive para habilitar o botão "Currículo"
   },
