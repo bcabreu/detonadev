@@ -50,7 +50,7 @@ export const labStages: LabStage[] = [
     description:
       'Captura e análise de pacotes em rede local. Observação de protocolos como ICMP, DNS e TCP.',
     tools: ['Wireshark', 'tcpdump'],
-    status: 'planejado',
+    status: 'documentado',
     articleSlug: 'primeiros-passos-com-wireshark',
   },
   {
