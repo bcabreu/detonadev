@@ -41,7 +41,7 @@ export const labStages: LabStage[] = [
     description:
       'Uso do Nmap para identificar portas abertas e serviços expostos em máquinas na rede local.',
     tools: ['Nmap', 'Ubuntu 24.04'],
-    status: 'planejado',
+    status: 'documentado',
     articleSlug: 'usando-nmap-para-identificar-portas-abertas',
   },
   {

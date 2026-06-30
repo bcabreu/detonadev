@@ -1,41 +1,331 @@
 ---
-title: "Usando Nmap para identificar portas abertas e vulnerabilidades"
-summary: "Primeiros passos com a principal ferramenta de varredura de redes do mercado para entender a perspectiva de um atacante na fase de reconhecimento."
-date: "2026-07-05"
-readTime: "12 min"
-status: "rascunho"
+title: "Usando Nmap para identificar portas abertas em um ambiente Docker"
+summary: "Neste laboratório, usei o Nmap para identificar portas abertas em um servidor Linux, investiguei os serviços expostos com lsof e relacionei as portas encontradas com containers Docker em execução."
+date: "2026-06-30"
+readTime: "15 min"
+status: "publicado"
 categories:
   - home-lab
+  - linux
+  - docker
   - redes
   - nmap
+  - soc
 ---
 
+Neste laboratório do DetonaDev Cyber Lab, documentei o uso do **Nmap** para analisar portas abertas em um servidor Linux e entender quais serviços estavam visíveis a partir de outra máquina na rede.
+
+O objetivo inicial era simples: verificar se o serviço **SSH** estava acessível. No entanto, durante o scan, o Nmap revelou outras portas abertas. A partir disso, investiguei o servidor com comandos como `lsof` e `docker ps` para entender quais processos e containers estavam relacionados a essas portas.
+
+Esse laboratório foi importante porque mostrou uma situação comum em ambientes reais:
+
+> Uma máquina pode ter mais serviços expostos do que aparenta quando olhamos apenas para o firewall.
+
+*Por segurança, alguns dados sensíveis das imagens e resultados foram ocultados, como nomes reais de aplicações, containers, portas internas e detalhes específicos do ambiente.*
+
 ## 1. Objetivo do laboratório
-Conteúdo será adicionado após a execução do laboratório.
+
+Os objetivos deste laboratório foram:
+
+- Identificar o IP do servidor Linux;
+- Verificar o status do firewall UFW;
+- Confirmar a conectividade entre o MacBook e o servidor;
+- Instalar e executar o Nmap;
+- Identificar portas abertas;
+- Detectar versões de serviços;
+- Investigar quais processos estavam escutando nas portas;
+- Relacionar portas abertas com containers Docker;
+- Documentar o resultado de forma segura, ocultando dados sensíveis.
 
 ## 2. Ambiente utilizado
-Conteúdo será adicionado após a execução do laboratório.
 
-## 3. Conceitos envolvidos
-Conteúdo será adicionado após a execução do laboratório.
+O laboratório foi feito usando:
 
-## 4. Passo a passo
-Conteúdo será adicionado após a execução do laboratório.
+- **MacBook** como máquina de origem do scan;
+- **Servidor Linux Ubuntu** como alvo;
+- **SSH** para administração remota;
+- **UFW** como firewall local;
+- **Nmap** para varredura de portas;
+- **Docker** para execução de aplicações;
+- `lsof` para identificar processos escutando conexões;
+- `docker ps` para relacionar portas publicadas com containers.
 
-## 5. Problema encontrado
-Conteúdo será adicionado após a execução do laboratório.
+A lógica foi analisar a máquina de duas formas:
 
-## 6. Diagnóstico
-Conteúdo será adicionado após a execução do laboratório.
+```text
+Visão externa: MacBook usando Nmap contra o servidor
+Visão interna: Servidor Linux mostrando processos e containers em execução
+```
 
-## 7. Solução aplicada
-Conteúdo será adicionado após a execução do laboratório.
+Essa comparação é essencial em segurança, porque o Nmap mostra como o servidor é visto de fora, enquanto os comandos internos mostram o que está realmente rodando.
 
-## 8. Validação
-Conteúdo será adicionado após a execução do laboratório.
+## 3. Confirmando o IP do servidor
 
-## 9. O que aprendi
-Conteúdo será adicionado após a execução do laboratório.
+Primeiro, confirmei o endereço IP local do servidor Linux.
 
-## 10. Relação com cibersegurança e SOC
-Conteúdo será adicionado após a execução do laboratório.
+No servidor, executei:
+
+```bash
+hostname -I | awk '{print $1}'
+```
+
+Esse comando mostra apenas o primeiro endereço IPv4 da máquina, evitando expor outros endereços que não eram necessários para o artigo.
+
+<ArticleImage
+  src="/images/articles/usando-nmap-para-identificar-portas-abertas-em-ambiente-docker/01-ip-ubuntu-hostname.png"
+  alt="Confirmação do endereço IPv4 local usado como alvo do scan."
+  caption="Confirmação do endereço IPv4 local usado como alvo do scan."
+/>
+
+O IP identificado foi usado como alvo nos testes seguintes.
+
+## 4. Verificando o firewall UFW
+
+Depois, verifiquei o status do firewall local com:
+
+```bash
+sudo ufw status
+```
+
+O ponto mais importante aqui era confirmar que o firewall estava ativo e que a porta do SSH estava permitida para a rede local. A regra mais relevante foi:
+
+```text
+22/tcp ALLOW 192.168.1.0/24
+```
+
+<ArticleImage
+  src="/images/articles/usando-nmap-para-identificar-portas-abertas-em-ambiente-docker/02-ufw-status-before-nmap.png"
+  alt="Status do firewall UFW antes do scan."
+  caption="Firewall UFW ativo, com regra permitindo SSH na rede local e outra regra relacionada a uma porta de aplicação."
+/>
+
+Isso significa que a porta 22/TCP, usada pelo SSH, estava liberada apenas para dispositivos da rede local.
+
+## 5. Confirmando o Nmap no MacBook
+
+No MacBook, verifiquei se o Nmap estava instalado:
+
+```bash
+nmap --version
+```
+
+<ArticleImage
+  src="/images/articles/usando-nmap-para-identificar-portas-abertas-em-ambiente-docker/03-nmap-version.png"
+  alt="Versão do Nmap instalada no MacBook."
+  caption="Confirmação da versão do Nmap instalada no MacBook."
+/>
+
+O Nmap é uma ferramenta usada para descoberta de hosts, identificação de portas abertas, detecção de serviços e análise básica de exposição de rede. Neste laboratório, ele foi usado apenas contra um ambiente próprio e autorizado.
+
+## 6. Testando conectividade com ping
+
+Antes de fazer o scan de portas, testei se o MacBook conseguia alcançar o servidor Linux pela rede. No MacBook, executei:
+
+```bash
+ping 192.168.1.78
+```
+
+O resultado mostrou:
+
+```text
+11 packets transmitted, 11 packets received, 0.0% packet loss
+```
+
+<ArticleImage
+  src="/images/articles/usando-nmap-para-identificar-portas-abertas-em-ambiente-docker/04-ping-ubuntu-from-macbook.png"
+  alt="Teste de ping do MacBook para o servidor Ubuntu."
+  caption="Ping bem-sucedido entre o MacBook e o servidor Linux."
+/>
+
+Isso confirmou que havia conectividade entre o MacBook e o servidor.
+
+## 7. Primeiro scan com Nmap
+
+Com a conectividade confirmada, executei o primeiro scan básico:
+
+```bash
+nmap 192.168.1.78
+```
+
+O Nmap identificou que o host estava ativo e encontrou algumas portas abertas. A porta esperada era:
+
+```text
+22/tcp open ssh
+```
+
+Essa porta representa o serviço SSH, usado para acesso remoto ao servidor. No entanto, o scan também mostrou outras portas abertas. Isso indicou que havia mais serviços acessíveis pela rede, além do SSH.
+
+<ArticleImage
+  src="/images/articles/usando-nmap-para-identificar-portas-abertas-em-ambiente-docker/05-nmap-basic-scan.png"
+  alt="Resultado do scan básico mostrando portas abertas no servidor."
+  caption="Resultado do scan básico mostrando portas abertas no servidor."
+/>
+
+Esse foi o primeiro ponto importante do laboratório: **o servidor tinha mais portas abertas do que eu inicialmente estava considerando.**
+
+## 8. Scan com detecção de versão
+
+Depois do scan básico, executei um scan com detecção de versão:
+
+```bash
+nmap -sV 192.168.1.78
+```
+
+A opção `-sV` faz o Nmap tentar identificar qual serviço está respondendo em cada porta aberta. Por exemplo:
+
+```text
+22/tcp open ssh OpenSSH
+```
+
+<ArticleImage
+  src="/images/articles/usando-nmap-para-identificar-portas-abertas-em-ambiente-docker/06-nmap-service-version.png"
+  alt="Scan com -sV mostrando identificação de serviços."
+  caption="Scan com -sV, mostrando tentativa de identificação dos serviços e versões."
+/>
+
+Isso mostra que a porta 22 estava aberta e que o serviço identificado era o OpenSSH. Além do SSH, o Nmap identificou serviços HTTP e outros serviços relacionados ao ambiente. 
+
+## 9. Scan específico das portas encontradas
+
+Após o scan inicial, executei um scan direcionado apenas nas portas identificadas.
+
+```bash
+nmap -p 22,80,8000,9000 192.168.1.78
+```
+
+<ArticleImage
+  src="/images/articles/usando-nmap-para-identificar-portas-abertas-em-ambiente-docker/07-nmap-specific-ports.png"
+  alt="Scan direcionado para portas específicas."
+  caption="Scan direcionado para portas específicas encontradas anteriormente."
+/>
+
+A opção `-p` permite escolher quais portas serão verificadas. Isso é útil quando já sabemos quais portas apareceram em um scan anterior e queremos validar apenas aquelas portas, de forma mais rápida e objetiva.
+
+## 10. Scan específico com detecção de versão
+
+Em seguida, executei novamente o scan específico, mas agora com detecção de versão:
+
+```bash
+nmap -sV -p 22,80,8000,8080,9000 192.168.1.78
+```
+
+Esse comando combinou duas ideias:
+
+- `-p` → escolher portas específicas
+- `-sV` → tentar identificar serviço e versão
+
+<ArticleImage
+  src="/images/articles/usando-nmap-para-identificar-portas-abertas-em-ambiente-docker/08-nmap-specific-ports-version.png"
+  alt="Scan direcionado com identificação de serviços."
+  caption="Scan direcionado com identificação de serviços e versões."
+/>
+
+Com isso, o Nmap mostrou não apenas que as portas estavam abertas, mas também uma estimativa dos serviços respondendo nelas. Esse tipo de informação é útil para inventário, análise de superfície de exposição e investigação inicial em segurança.
+
+## 11. Investigando processos com lsof
+
+Depois de identificar portas abertas com o Nmap, precisei entender quais processos estavam escutando no servidor. Para isso, usei:
+
+```bash
+sudo lsof -iTCP -sTCP:LISTEN -P -n
+```
+
+Esse comando mostra processos que estão em estado LISTEN, ou seja, aguardando conexões.
+
+<ArticleImage
+  src="/images/articles/usando-nmap-para-identificar-portas-abertas-em-ambiente-docker/09-lsof-listening-services.png"
+  alt="Saída do lsof mostrando processos em escuta."
+  caption="Saída do lsof mostrando processos escutando conexões TCP. Dados sensíveis foram ocultados."
+/>
+
+A parte mais importante foi perceber que várias portas estavam associadas ao `docker-proxy`. Isso indica que as portas não estavam necessariamente sendo abertas diretamente por serviços instalados no sistema operacional, mas sim por containers Docker que estavam publicando portas no host.
+
+## 12. Relacionando portas com containers Docker
+
+Para confirmar a relação entre portas abertas e containers, executei:
+
+```bash
+docker ps --format "table {{.ID}}\t{{.Names}}\t{{.Image}}\t{{.Ports}}"
+```
+
+Esse comando mostra os containers em execução e suas portas publicadas. A investigação confirmou que as portas encontradas pelo Nmap estavam relacionadas a serviços executando em containers Docker.
+
+<ArticleImage
+  src="/images/articles/usando-nmap-para-identificar-portas-abertas-em-ambiente-docker/10-docker-published-ports.png"
+  alt="Lista de containers e portas publicadas."
+  caption="Lista de containers e portas publicadas. Informações sensíveis foram ocultadas antes da publicação."
+/>
+
+Esse foi o ponto principal do laboratório: **o Nmap mostrou a visão externa do servidor, enquanto o `lsof` e o `docker ps` ajudaram a explicar internamente quais processos e containers estavam relacionados às portas abertas.**
+
+## 13. O que aprendi neste laboratório
+
+Este laboratório mostrou que analisar portas abertas exige mais do que olhar apenas para uma ferramenta. O raciocínio completo foi:
+
+1. Confirmar o IP do servidor
+2. Verificar o firewall local
+3. Testar conectividade
+4. Executar scan básico com Nmap
+5. Executar scan com detecção de versão
+6. Investigar processos com `lsof`
+7. Relacionar portas abertas com containers Docker
+8. Ocultar dados sensíveis antes de publicar
+
+A principal lição foi: **uma porta aberta representa um serviço acessível pela rede, e todo serviço acessível aumenta a superfície de exposição do servidor.**
+
+## 14. Visão externa versus visão interna
+
+Uma das partes mais importantes do laboratório foi comparar duas perspectivas.
+
+A **visão externa** foi feita com o Nmap:
+
+```bash
+nmap 192.168.1.78
+```
+
+Essa visão responde à pergunta: *O que outra máquina consegue enxergar neste servidor?*
+
+A **visão interna** foi feita com `lsof` e `docker ps`:
+
+```bash
+sudo lsof -iTCP -sTCP:LISTEN -P -n
+docker ps --format "table {{.ID}}\t{{.Names}}\t{{.Image}}\t{{.Ports}}"
+```
+
+Essa visão responde à pergunta: *Quais processos ou containers estão abrindo essas portas?*
+
+Em segurança, as duas visões são importantes.
+- O Nmap mostra **exposição**.
+- O sistema operacional mostra a **causa**.
+- O Docker mostra a **origem** dos serviços publicados.
+
+## 15. Sobre a ocultação de dados sensíveis
+
+Como este laboratório foi feito em um ambiente real, algumas informações foram ocultadas antes da publicação:
+
+- Nomes reais de aplicações;
+- Nomes de containers;
+- Imagens Docker específicas;
+- Portas internas de serviços;
+- Detalhes que poderiam expor a estrutura do ambiente.
+
+Essa decisão faz parte de uma documentação responsável. Em um portfólio de cibersegurança, não basta mostrar comandos e resultados. Também é importante demonstrar cuidado com informações sensíveis.
+
+## 16. Conclusão
+
+Neste laboratório, usei o Nmap para identificar portas abertas em um servidor Linux e investiguei a origem dessas portas usando comandos internos do sistema.
+
+O scan revelou serviços além do SSH. Com `lsof`, identifiquei processos em estado de escuta. Com `docker ps`, confirmei que parte dessas portas estava relacionada a containers Docker publicando serviços no host.
+
+Esse laboratório reforçou conceitos importantes de segurança:
+
+- Análise de portas abertas;
+- Identificação de serviços;
+- Superfície de exposição;
+- Diferença entre firewall, processo e container;
+- Investigação com ferramentas de linha de comando;
+- Cuidado ao publicar evidências técnicas de ambientes reais.
+
+A principal conclusão é: **O Nmap mostra o que está exposto. Comandos como lsof e docker ps ajudam a entender por que aquilo está exposto.**
+
+Esse tipo de análise é fundamental para quem está estudando segurança de redes, Blue Team, SOC e administração segura de servidores Linux.
