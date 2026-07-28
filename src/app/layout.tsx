@@ -1,9 +1,9 @@
+import { headers } from 'next/headers';
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
-import { Header } from '@/components/layout/header';
-import { Footer } from '@/components/layout/footer';
 import { siteConfig } from '@/data/site';
+import { defaultLocale } from '@/i18n/config';
 
 const geist = Geist({
   subsets: ['latin'],
@@ -19,47 +19,36 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
-  title: {
-    default: `${siteConfig.title} | Laboratório de Cibersegurança de Bruno Abreu`,
-    template: `%s | ${siteConfig.title}`,
-  },
-  description: siteConfig.description,
-  authors: [{ name: siteConfig.author.name }],
-  openGraph: {
-    type: 'website',
-    locale: siteConfig.locale,
-    url: siteConfig.url,
-    siteName: siteConfig.name,
-    title: `${siteConfig.title} | Laboratório de Cibersegurança de Bruno Abreu`,
-    description: siteConfig.description,
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
-  alternates: {
-    canonical: '/',
-  },
 };
 
-export default function RootLayout({
+/**
+ * Root layout — intentionally minimal.
+ *
+ * Responsibilities:
+ *   1. Load fonts and globals.css
+ *   2. Set <html lang> by reading the x-locale header injected by middleware
+ *   3. Render <body> with children
+ *
+ * All UI chrome (Header, Footer, LocaleProvider) lives in app/[locale]/layout.tsx.
+ */
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Read the locale that the middleware injected into the request headers.
+  // Falls back to defaultLocale for edge cases (e.g. not-found page outside [locale]).
+  const headersList = await headers();
+  const locale = headersList.get('x-locale') || defaultLocale;
+
   return (
     <html
-      lang={siteConfig.locale}
+      lang={locale}
       className={`${geist.variable} ${geistMono.variable}`}
       suppressHydrationWarning
     >
-      {/* Analytics placeholder — adicionar GA4/Plausible aqui no futuro */}
       <body suppressHydrationWarning>
-        <div className="relative flex min-h-[100dvh] flex-col">
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
-        </div>
+        {children}
       </body>
     </html>
   );

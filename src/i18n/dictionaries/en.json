@@ -1,0 +1,175 @@
+{
+  "nav": {
+    "home": "Home",
+    "lab": "Lab",
+    "articles": "Articles",
+    "about": "About",
+    "contact": "Contact"
+  },
+  "common": {
+    "back": "Back",
+    "viewAll": "View all",
+    "viewDetails": "View details",
+    "readArticle": "Read article",
+    "viewDraft": "View draft",
+    "readLabel": "Read:",
+    "by": "By",
+    "downloadResume": "Download resume",
+    "filterByCategory": "Filter by category",
+    "all": "All",
+    "backToHome": "Back to home",
+    "seeArticle": "See article",
+    "links": "Links",
+    "contactLabel": "Contact"
+  },
+  "status": {
+    "documented": "Documented",
+    "inProgress": "In progress",
+    "planned": "Planned",
+    "draft": "Draft",
+    "published": "Published"
+  },
+  "meta": {
+    "siteTitle": "DetonaDev Cyber Lab",
+    "siteDescription": "Practical cybersecurity studies covering Linux, networks, SSH, firewall, logs, SOC, and information security documented by Bruno Abreu.",
+    "authorRole": "Information Systems & Economics graduate — Transitioning to Cybersecurity"
+  },
+  "home": {
+    "eyebrow": "Cybersecurity Lab",
+    "heroTitle1": "DetonaDev",
+    "heroTitle2": "Cyber Lab",
+    "authorBio": "By Bruno Abreu — Information Systems graduate, transitioning to Cybersecurity and SOC.",
+    "heroDescription": "Public lab of practical cybersecurity studies covering Linux, networks, SOC, logs, firewall, and information security.",
+    "heroSubtext": "This site documents my transition to cybersecurity through hands-on labs, technical studies, and real learning records. The goal is to turn theory into practice and build a solid foundation to work in Information Security and SOC.",
+    "viewLab": "View Cybersecurity Home Lab",
+    "readArticles": "Read technical articles",
+    "labEyebrow": "Laboratory",
+    "labTitle": "Cybersecurity Home Lab",
+    "labDescription": "Controlled environment for practicing cybersecurity fundamentals.",
+    "articlesEyebrow": "Articles",
+    "articlesTitle": "Recent studies",
+    "articlesEmptyTitle": "Articles in preparation",
+    "articlesEmptyDescription": "Technical reports and analyses will be published here as labs are completed in the real environment.",
+    "articlesEmptyTag": "SSH & Firewall (Planning Documentation)",
+    "recruitersEyebrow": "For recruiters",
+    "recruitersTitle": "Practical documentation, not generic content",
+    "recruitersDescription1": "This lab documents my practical evolution in cybersecurity. The goal is to demonstrate progressive mastery of fundamentals such as Linux, networks, SSH, firewall, logs, event analysis, security tools, and SOC concepts.",
+    "recruitersDescription2": "Each article records the objective, environment, problem, diagnosis, solution, and learning. This is not a news blog — it is a technical record of real studies.",
+    "viewFullLab": "View full lab",
+    "aboutAuthor": "About Bruno Abreu"
+  },
+  "articles": {
+    "eyebrow": "Articles",
+    "title": "Technical articles",
+    "description": "Documentation, investigations, and technical tutorials based on the cybersecurity lab practices.",
+    "backToArticles": "Back to articles",
+    "allArticles": "All articles",
+    "viewHomeLab": "View Home Lab",
+    "draftBannerTitle": "Draft article",
+    "draftBannerDescription": "This article is being prepared and will be filled with actual lab content after execution.",
+    "emptyContent": "Content will be added after the lab is executed.",
+    "fallbackBannerTitle": "Article available in Portuguese only",
+    "fallbackBannerDescription": "This article has not been translated yet. You are viewing the original Portuguese version.",
+    "viewInOriginal": "View in original language"
+  },
+  "lab": {
+    "eyebrow": "Home Lab",
+    "title": "Cybersecurity Home Lab",
+    "description": "This lab was created to practice real cybersecurity fundamentals in a controlled environment. The goal is to study Linux, networks, remote access, firewall, logs, event analysis, diagnostic tools, and SOC concepts.",
+    "environmentTitle": "Environment used",
+    "environmentFuture": "Coming soon: Nmap, Wireshark, Wazuh, and other resources will be integrated into the environment.",
+    "roadmapTitle": "Lab Roadmap",
+    "roadmapDescription": "Planned progression of cybersecurity studies and hands-on labs.",
+    "stageLabel": "Stage",
+    "env": {
+      "accessStation": "Access station",
+      "accessStationValue": "MacBook (remote terminal)",
+      "server": "Server",
+      "serverValue": "Ubuntu 24.04.4 LTS",
+      "network": "Network",
+      "networkValue": "Local Wi-Fi network",
+      "services": "Services",
+      "servicesValue": "OpenSSH, UFW Firewall"
+    }
+  },
+  "about": {
+    "eyebrow": "About",
+    "title": "Bruno Abreu",
+    "subtitle": "Information Systems and Economics graduate, transitioning to Cybersecurity.",
+    "bio1": "I'm Bruno Abreu, an Information Systems and Economics graduate, transitioning to Cybersecurity. I'm currently studying information security fundamentals and preparing for the CompTIA Security+ certification.",
+    "bio2": "I created DetonaDev Cyber Lab to document my practical studies in Linux, networks, firewall, logs, SOC, incident response, and tools used in security environments. The goal is to record the learning process transparently, technically, and objectively — showing not just commands, but also the reasoning behind each configuration, diagnosis, and solution.",
+    "bio3": "My previous experience includes web projects, automation, published apps, and technology applied to business. This background complements my transition to cybersecurity with a practical understanding of how systems work, where they can fail, and how to protect information in real environments.",
+    "educationTitle": "Education",
+    "education1": "Information Systems",
+    "education2": "Economics",
+    "certTitle": "Certification in progress",
+    "certValue": "CompTIA Security+",
+    "interestsTitle": "Areas of interest",
+    "interests": ["SOC", "Information Security", "Linux", "Networks", "Logs", "Access Control", "Incident Response", "Operational Security", "Firewall", "SIEM"]
+  },
+  "contact": {
+    "eyebrow": "Contact",
+    "title": "Let's talk",
+    "description": "Open to junior, trainee, or entry-level opportunities in Cybersecurity, SOC, and Information Security.",
+    "subdescription": "If you are a recruiter, security professional, or someone interested in exchanging knowledge, feel free to reach out.",
+    "email": "Email",
+    "linkedin": "LinkedIn",
+    "resume": "Resume",
+    "downloadResume": "Download resume",
+    "github": "GitHub"
+  },
+  "notFound": {
+    "title": "404",
+    "description": "Page not found. The resource you are looking for does not exist or has been moved.",
+    "backToHome": "Back to home"
+  },
+  "footer": {
+    "tagline": "Practical studies in Cybersecurity, Linux, Networks, and SOC.",
+    "copyright": "©"
+  },
+  "categories": {
+    "home-lab": "Home Lab",
+    "linux": "Linux",
+    "redes": "Networks",
+    "soc": "SOC",
+    "logs": "Logs",
+    "ferramentas": "Tools",
+    "isc2-cc": "ISC2 CC",
+    "seguranca-da-informacao": "Information Security",
+    "wireshark": "Wireshark",
+    "ssh": "SSH",
+    "tcp": "TCP",
+    "icmp": "ICMP",
+    "nmap": "Nmap"
+  },
+  "labStages": {
+    "1": {
+      "title": "Remote access via SSH",
+      "description": "Remote access setup between MacBook and Ubuntu via OpenSSH. Concepts of IP, ports, SSH service, and connectivity diagnostics."
+    },
+    "2": {
+      "title": "Firewall with UFW",
+      "description": "Configuration and understanding of the UFW firewall on Ubuntu. Inbound and outbound rules, port opening, and access control best practices."
+    },
+    "3": {
+      "title": "Authentication logs",
+      "description": "Analysis of SSH authentication logs on Linux. Understanding login events, failures, source IPs, and the importance of logs for SOC."
+    },
+    "4": {
+      "title": "Port scanning with Nmap",
+      "description": "Using Nmap to identify open ports and exposed services on local network machines."
+    },
+    "5": {
+      "title": "Traffic analysis with Wireshark",
+      "description": "Packet capture and analysis on a local network. Observing protocols such as ICMP, DNS, and TCP."
+    },
+    "6": {
+      "title": "Basic monitoring with Wazuh",
+      "description": "Basic installation and configuration of Wazuh as a SIEM for security event monitoring."
+    }
+  },
+  "languageSelector": {
+    "label": "Language",
+    "ariaLabel": "Select language"
+  }
+}

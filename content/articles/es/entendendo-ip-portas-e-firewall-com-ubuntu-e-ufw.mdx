@@ -1,0 +1,123 @@
+---
+title: "Entendiendo IP, puertos y firewall en la práctica con Ubuntu y UFW"
+summary: "Una inmersión práctica en la gestión de reglas de firewall (UFW) en Linux, explorando cómo los protocolos y puertos se relacionan en la protección de un entorno de red."
+date: "2026-06-15"
+readTime: "8 min"
+status: "publicado"
+categories:
+  - home-lab
+  - linux
+  - firewall
+---
+
+En este laboratorio del DetonaDev Cyber Lab, el objetivo fue explorar de forma práctica cómo los IPs, puertos y reglas de firewall interactúan para proteger o exponer un servidor Linux.
+
+El firewall es la primera línea de defensa de cualquier servidor, y gestionar sus reglas correctamente es fundamental para garantizar la seguridad de los servicios alojados. En este laboratorio, utilicé UFW (Uncomplicated Firewall) en Ubuntu para entender cómo funcionan estas reglas en la práctica.
+
+## 1. Objetivo del laboratorio
+
+El objetivo principal de este laboratorio fue:
+- Entender la relación entre direcciones IP y puertos TCP/UDP.
+- Configurar UFW en Ubuntu Linux.
+- Crear reglas de permiso y bloqueo de tráfico.
+- Probar la eficacia de las reglas desde otra máquina en la red.
+
+## 2. Entorno utilizado
+
+El laboratorio se realizó utilizando el siguiente entorno:
+- **Servidor:** Ubuntu 24.04.4 LTS (Objetivo)
+- **Cliente:** MacBook Air (Atacante/Probador)
+- **Herramienta de Firewall:** UFW (Uncomplicated Firewall)
+- **Herramientas de Prueba:** `ping`, `nc` (Netcat) y `telnet`.
+
+## 3. Conceptos involucrados
+
+Antes de iniciar las configuraciones, es esencial entender tres conceptos fundamentales:
+
+- **Dirección IP:** La dirección IP funciona como la dirección postal de una máquina en la red. Garantiza que los paquetes de datos encuentren el camino correcto entre el origen y el destino.
+- **Puertos:** Si la IP es la dirección del edificio, el puerto es el número del apartamento. Los puertos permiten que el sistema operativo dirija el tráfico de red a la aplicación correcta (ej: puerto 22 para SSH, puerto 80 para HTTP).
+- **Firewall:** El firewall es el portero del edificio. Verifica todas las conexiones que entran o salen del servidor y decide si deben ser permitidas o bloqueadas basándose en un conjunto de reglas predefinidas.
+
+## 4. Paso a paso
+
+El primer paso fue verificar el estado actual del firewall en Ubuntu. Por defecto, UFW suele venir desactivado.
+
+```bash
+sudo ufw status
+```
+
+El resultado fue `Status: inactive`.
+
+Para asegurar que no perdería el acceso remoto antes de activar el firewall, añadí una regla permitiendo el tráfico SSH:
+
+```bash
+sudo ufw allow ssh
+```
+
+Después, activé el firewall:
+
+```bash
+sudo ufw enable
+```
+
+A partir de ese momento, el firewall comenzó a bloquear por defecto todas las conexiones entrantes que no tuvieran una regla explícita de permiso, garantizando la seguridad base del servidor.
+
+Para realizar las pruebas prácticas, inicié un servicio básico de escucha en el puerto 8080 del servidor usando Netcat:
+
+```bash
+nc -l -p 8080
+```
+
+Y en el MacBook, intenté conectarme a ese puerto:
+
+```bash
+telnet 192.168.1.78 8080
+```
+
+## 5. Problema encontrado
+
+Al intentar conectar en el puerto 8080 desde el MacBook, la conexión no se estableció y se quedó esperando hasta generar un error de *timeout*.
+
+El servidor estaba escuchando en el puerto 8080 (confirmado por Netcat en ejecución), pero la máquina cliente no lograba alcanzarlo.
+
+## 6. Diagnóstico
+
+Para diagnosticar el problema, revisé nuevamente las reglas del firewall en el servidor:
+
+```bash
+sudo ufw status verbose
+```
+
+El comando listó las reglas activas. Solo el puerto 22 (SSH) estaba configurado para aceptar conexiones. El puerto 8080 no tenía ninguna regla definida y, como el comportamiento por defecto de UFW es denegar entradas desconocidas (`Default: deny (incoming)`), la conexión de Netcat estaba siendo bloqueada sumariamente por el firewall antes de llegar a la aplicación.
+
+## 7. Solución aplicada
+
+La solución fue añadir una regla específica para permitir el tráfico en el puerto 8080. Para aplicar el principio del menor privilegio, creé una regla que permitía la conexión solo desde la IP de mi red local.
+
+```bash
+sudo ufw allow from 192.168.1.0/24 to any port 8080
+```
+
+Después de eso, verifiqué de nuevo el estado del firewall para confirmar la aplicación de la regla:
+
+```bash
+sudo ufw status
+```
+
+El resultado ahora mostraba el puerto 8080 liberado para la subred `192.168.1.0/24`.
+
+## 8. Validación
+
+En el MacBook, intenté la conexión nuevamente usando Telnet:
+
+```bash
+telnet 192.168.1.78 8080
+```
+
+Esta vez, la conexión fue aceptada inmediatamente. Escribí un mensaje en el terminal del MacBook ("Prueba de conexión") y apareció en el terminal de Ubuntu donde Netcat estaba escuchando. Esto confirmó que el tráfico estaba pasando con éxito por el firewall.
+
+## 9. Lo que aprendí
+
+Este laboratorio práctico reforzó la comprensión de que tener una aplicación escuchando en un puerto no es suficiente para que esté accesible en la red. El sistema operativo (a través del firewall) tiene la última palabra sobre el tráfico que entra o sale.
+
+Además, aprendí la importancia de la regla de política por defecto (Default Deny) y cómo crear reglas granulares en UFW (restringiendo por IP de origen) para reducir la superficie de ataque del servidor. Estos fundamentos son esenciales para cualquier profesional que pretenda actuar en áreas de ciberseguridad o administración de sistemas.

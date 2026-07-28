@@ -1,12 +1,24 @@
+'use client';
+
 import Link from 'next/link';
 import { siteConfig } from '@/data/site';
 import { Terminal, Linkedin, Mail, Github } from 'lucide-react';
+import { useLocale } from '@/i18n/locale-context';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
   const { author } = siteConfig;
   const github = author.github as string;
   const linkedin = author.linkedin as string;
+  const { locale, dictionary } = useLocale();
+
+  const navItems = [
+    { href: '/', label: dictionary.nav.home },
+    { href: '/lab', label: dictionary.nav.lab },
+    { href: '/artigos', label: dictionary.nav.articles },
+    { href: '/sobre', label: dictionary.nav.about },
+    { href: '/contato', label: dictionary.nav.contact },
+  ];
 
   return (
     <footer className="border-t border-[rgba(255,255,255,0.06)] bg-[var(--color-bg-surface)]">
@@ -15,7 +27,7 @@ export function Footer() {
           {/* Branding */}
           <div className="max-w-sm">
             <Link
-              href="/"
+              href={`/${locale}`}
               className="inline-flex items-center gap-2 text-[var(--color-text-primary)] hover:text-[var(--color-accent)] transition-colors no-underline mb-3"
             >
               <Terminal size={16} strokeWidth={1.5} className="text-[var(--color-accent)]" />
@@ -24,20 +36,20 @@ export function Footer() {
               </span>
             </Link>
             <p className="text-sm text-[var(--color-text-muted)] leading-relaxed">
-              Estudos práticos em Cibersegurança, Linux, Redes e SOC.
+              {dictionary.footer.tagline || 'Estudos práticos em Cibersegurança, Linux, Redes e SOC.'}
             </p>
           </div>
 
           {/* Links */}
           <div className="flex flex-col gap-3">
             <span className="text-xs font-mono uppercase tracking-wider text-[var(--color-text-muted)]">
-              Links
+              {dictionary.common.links || 'Links'}
             </span>
             <nav className="flex flex-col gap-2">
-              {siteConfig.nav.map((item) => (
+              {navItems.map((item) => (
                 <Link
                   key={item.href}
-                  href={item.href}
+                  href={`/${locale}${item.href === '/' ? '' : item.href}`}
                   className="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors no-underline"
                 >
                   {item.label}

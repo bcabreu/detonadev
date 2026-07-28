@@ -1,0 +1,400 @@
+---
+title: "Analizando tráfico de red con Wireshark en mi laboratorio de ciberseguridad"
+summary: "En este laboratorio, utilicé Wireshark para capturar y analizar el tráfico de red entre mi MacBook y un servidor Linux, observando paquetes ICMP, conexiones SSH, handshakes TCP y el tráfico generado por un escaneo Nmap."
+date: "2026-06-30"
+readTime: "16 min"
+status: "publicado"
+categories:
+  - home-lab
+  - wireshark
+  - linux
+  - redes
+  - ssh
+  - tcp
+  - icmp
+  - nmap
+  - soc
+---
+
+En este laboratorio del DetonaDev Cyber Lab, documenté el uso de **Wireshark** para capturar y analizar el tráfico de red entre mi MacBook y un servidor Linux.
+
+En laboratorios anteriores, ya había trabajado con SSH, logs de autenticación y Nmap. Ahora, el objetivo era observar lo que sucede en la red mientras se ejecutan comandos como `ping`, `ssh` y `nmap`.
+
+La idea principal fue pasar de la vista de comandos a la vista de paquetes:
+
+```text
+ping  → genera tráfico ICMP
+ssh   → genera conexión TCP en el puerto 22
+nmap  → genera intentos TCP para identificar puertos abiertos
+```
+
+Este laboratorio fue importante para entender cómo las herramientas de red aparecen en el tráfico capturado y cómo Wireshark puede usarse para el análisis, diagnóstico y estudio de protocolos.
+
+## 1. Objetivo del laboratorio
+
+Los objetivos de este laboratorio fueron:
+
+- Abrir Wireshark en el MacBook;
+- Identificar la interfaz de red correcta;
+- Aplicar filtros de captura y visualización;
+- Capturar tráfico ICMP generado por el comando ping;
+- Capturar tráfico SSH entre el MacBook y el servidor Linux;
+- Identificar el TCP three-way handshake;
+- Observar el tráfico generado por un escaneo Nmap;
+- Comparar una conexión normal con un escaneo de puertos;
+- Documentar los resultados de forma segura.
+
+## 2. Entorno utilizado
+
+El laboratorio se realizó utilizando:
+
+- **MacBook** como máquina de origen;
+- **Servidor Linux** como objetivo;
+- **Wireshark** para la captura de paquetes;
+- **Terminal de macOS** para generar tráfico;
+- **SSH** para conexión remota;
+- **Nmap** para escaneo de puertos;
+- **Red local** entre el MacBook y el servidor.
+
+El servidor analizado estaba en la dirección:
+
+```text
+192.168.1.78
+```
+
+Y el MacBook se comunicaba con él a través de la interfaz Wi-Fi.
+
+## 3. Abriendo Wireshark
+
+Primero, abrí Wireshark en el MacBook.
+
+<ArticleImage
+  src="/images/articles/analisando-trafego-de-rede-com-wireshark/01-wireshark-home.png"
+  alt="Pantalla de inicio de Wireshark, mostrando las interfaces disponibles para captura."
+  caption="Pantalla de inicio de Wireshark, mostrando las interfaces disponibles para captura."
+/>
+
+Wireshark enumera las interfaces de red disponibles en el sistema. En el MacBook, la interfaz utilizada para Wi-Fi generalmente aparece como:
+
+```text
+Wi-Fi: en0
+```
+
+Esta fue la interfaz utilizada en este laboratorio.
+
+## 4. Identificando la interfaz correcta
+
+Antes de iniciar la captura, confirmé a través del terminal qué interfaz se usaría para llegar al servidor Linux.
+
+En el MacBook, ejecuté:
+
+```bash
+route get 192.168.1.78
+```
+
+<ArticleImage
+  src="/images/articles/analisando-trafego-de-rede-com-wireshark/02-network-interface.png"
+  alt="Resultado del comando route get, confirmando que la interfaz utilizada para alcanzar el servidor era la en0."
+  caption="Resultado del comando route get, confirmando que la interfaz utilizada para alcanzar el servidor era la en0."
+/>
+
+El resultado mostró:
+
+```text
+interface: en0
+```
+
+Esto confirmó que la captura debía realizarse en la interfaz:
+
+```text
+Wi-Fi: en0
+```
+
+Este paso es importante porque capturar en la interfaz equivocada puede causar que Wireshark no muestre el tráfico esperado.
+
+## 5. Aplicando filtro de IP
+
+Con la captura iniciada en la interfaz `Wi-Fi: en0`, apliqué el siguiente filtro en Wireshark:
+
+```text
+ip.addr == 192.168.1.78
+```
+
+<ArticleImage
+  src="/images/articles/analisando-trafego-de-rede-com-wireshark/03-wireshark-ip-filter.png"
+  alt="Filtro aplicado para mostrar solo los paquetes que involucran al servidor Linux."
+  caption="Filtro aplicado para mostrar solo los paquetes que involucran al servidor Linux."
+/>
+
+Este filtro muestra solo los paquetes en los que la dirección `192.168.1.78` aparece como origen o destino.
+
+En otras palabras, responde a la pregunta: *¿Qué paquetes van o vienen del servidor?*
+
+Este tipo de filtro ayuda a reducir el ruido de la captura, porque en una red común muchos paquetes aparecen al mismo tiempo.
+
+## 6. Capturando tráfico ICMP con ping
+
+Después, generé tráfico ICMP usando el comando `ping`.
+
+En el terminal del MacBook, ejecuté:
+
+```bash
+ping 192.168.1.78
+```
+
+En Wireshark, usé el filtro:
+
+```text
+icmp && ip.addr == 192.168.1.78
+```
+
+<ArticleImage
+  src="/images/articles/analisando-trafego-de-rede-com-wireshark/04-icmp-ping-capture.png"
+  alt="Paquetes ICMP capturados durante el comando ping."
+  caption="Paquetes ICMP capturados durante el comando ping."
+/>
+
+Wireshark mostró paquetes del tipo:
+
+```text
+Echo (ping) request
+Echo (ping) reply
+```
+
+La lógica es simple:
+
+- **Echo request** = el MacBook preguntando si el servidor responde
+- **Echo reply** = el servidor respondiendo al MacBook
+
+El ping parece un comando simple, pero por detrás genera paquetes ICMP entre las máquinas.
+
+Esta prueba confirmó dos cosas:
+1. El MacBook podía alcanzar el servidor.
+2. Wireshark podía capturar este tráfico.
+
+## 7. Capturando tráfico SSH
+
+Después de analizar el ICMP, capturé el tráfico SSH.
+
+En Wireshark, usé el filtro:
+
+```text
+tcp.port == 22 && ip.addr == 192.168.1.78
+```
+
+Este filtro muestra solo tráfico TCP en el puerto 22 que involucra al servidor.
+
+En el terminal del MacBook, me conecté vía SSH:
+
+```bash
+ssh bruno-abreu@192.168.1.78
+```
+
+Luego ejecuté algunos comandos simples en el servidor y cerré la sesión.
+
+<ArticleImage
+  src="/images/articles/analisando-trafego-de-rede-com-wireshark/05-ssh-traffic-capture.png"
+  alt="Paquetes SSH capturados entre el MacBook y el servidor Linux."
+  caption="Paquetes SSH capturados entre el MacBook y el servidor Linux."
+/>
+
+En Wireshark, aparecieron paquetes como:
+
+```text
+Client: Encrypted packet
+Server: Encrypted packet
+```
+
+Este punto es muy importante. Wireshark puede mostrar:
+
+- IP de origen
+- IP de destino
+- Puerto de origen
+- Puerto de destino
+- Protocolo
+- Tamaño de los paquetes
+- Dirección de la comunicación
+
+Pero **no puede leer el contenido de la sesión SSH**, porque el SSH está encriptado.
+
+Es decir: Wireshark ve que existe comunicación SSH, pero no muestra los comandos tipeados dentro de la sesión. Este es exactamente el comportamiento esperado de una conexión segura.
+
+## 8. Entendiendo el TCP three-way handshake
+
+Antes de que una sesión SSH intercambie datos encriptados, primero debe existir una conexión TCP. Esta apertura de conexión ocurre en tres etapas:
+
+- SYN
+- SYN, ACK
+- ACK
+
+Capturé una nueva conexión SSH desde el inicio para observar este proceso.
+
+<ArticleImage
+  src="/images/articles/analisando-trafego-de-rede-com-wireshark/06-tcp-handshake-details.png"
+  alt="Inicio de la conexión TCP antes del intercambio de datos SSH."
+  caption="Inicio de la conexión TCP antes del intercambio de datos SSH."
+/>
+
+En la captura, es posible ver una secuencia similar a:
+
+```text
+MacBook → Servidor: SYN
+Servidor → MacBook: SYN, ACK
+MacBook → Servidor: ACK
+```
+
+En términos prácticos:
+
+- **SYN** = el cliente pide iniciar una conexión TCP
+- **SYN, ACK** = el servidor responde aceptando iniciar la conexión
+- **ACK** = el cliente confirma la conexión
+
+Después de esta etapa, aparecen mensajes relacionados con el SSH, como:
+
+```text
+Client: Protocol
+Server: Protocol
+Key Exchange Init
+Encrypted packet
+```
+
+Esto muestra que el SSH depende primero de una conexión TCP establecida. Este fue uno de los puntos más importantes del laboratorio, porque conectó la teoría de redes con una captura real.
+
+## 9. Capturando tráfico generado por Nmap
+
+Después de observar una conexión normal vía SSH, comparé este comportamiento con un escaneo de puertos usando Nmap.
+
+Con Wireshark capturando, ejecuté en el MacBook:
+
+```bash
+nmap -p 22,80,8000,8080,9000 192.168.1.78
+```
+
+En Wireshark, usé el filtro:
+
+```text
+ip.addr == 192.168.1.78
+```
+
+<ArticleImage
+  src="/images/articles/analisando-trafego-de-rede-com-wireshark/07-nmap-scan-traffic.png"
+  alt="Paquetes TCP generados durante un escaneo Nmap contra puertos específicos."
+  caption="Paquetes TCP generados durante un escaneo Nmap contra puertos específicos."
+/>
+
+La captura mostró varios intentos TCP para puertos diferentes, como: `22, 80, 8000, 8080, 9000`.
+
+Este comportamiento es diferente de una conexión SSH normal. Una conexión SSH tiende a mantener una sesión activa e intercambiar datos continuamente. El escaneo de Nmap, por otro lado, hace varios intentos rápidos para verificar qué puertos responden.
+
+En la captura, aparecen paquetes como:
+
+```text
+SYN
+SYN, ACK
+RST, ACK
+```
+
+Esto muestra el proceso de prueba de puertos. De forma simplificada:
+
+- **SYN** = intento de iniciar conexión
+- **SYN, ACK** = el puerto respondió
+- **RST, ACK** = cierre rápido del intento
+
+Este patrón es común en escaneos de puertos, porque la herramienta no necesita mantener una sesión larga. Solo quiere descubrir si el puerto está abierto, cerrado o filtrado.
+
+## 10. Diferencia entre ping, SSH y Nmap
+
+Al comparar las capturas, fue más fácil entender la diferencia entre los tipos de tráfico.
+
+### Ping
+
+- **Protocolo**: ICMP
+- **Objetivo**: Probar conectividad
+- **Ejemplo**: Echo request / Echo reply
+
+El ping responde a la pregunta: *¿El servidor responde en la red?*
+
+### SSH
+
+- **Protocolo**: TCP
+- **Puerto**: 22
+- **Objetivo**: Acceso remoto seguro
+- **Contenido**: Encriptado
+
+El SSH responde a la pregunta: *¿Puedo abrir una sesión segura con el servidor?*
+
+### Nmap
+
+- **Protocolo**: TCP
+- **Objetivo**: Identificar puertos abiertos
+- **Comportamiento**: Varios intentos rápidos a puertos diferentes
+
+El Nmap responde a la pregunta: *¿Qué puertos están abiertos o respondiendo en este servidor?*
+
+Esta comparación fue una de las partes más importantes del laboratorio.
+
+## 11. Lo que aprendí en este laboratorio
+
+En este laboratorio, practiqué conceptos importantes de redes y seguridad:
+
+- ICMP
+- TCP
+- SSH
+- Nmap
+- Wireshark
+- Filtros de captura
+- Three-way handshake
+- Puertos TCP
+- Tráfico encriptado
+- Análisis de paquetes
+
+También entendí mejor la diferencia entre ver una conexión por el terminal y ver esa misma conexión a nivel de paquetes.
+
+En el terminal, veo comandos como:
+
+```bash
+ping 192.168.1.78
+ssh bruno-abreu@192.168.1.78
+nmap -p 22,80,8000,8080,9000 192.168.1.78
+```
+
+En Wireshark, veo lo que esos comandos generan en la red:
+
+```text
+Echo request
+Echo reply
+SYN
+SYN, ACK
+ACK
+Encrypted packet
+RST, ACK
+```
+
+Esta visión ayuda mucho a entender el comportamiento real de los protocolos.
+
+## 12. Cuidados al usar Wireshark
+
+Wireshark es una herramienta poderosa, pero debe usarse con responsabilidad. Las capturas de red pueden contener información sensible, como:
+
+- Direcciones IP
+- Nombres de dispositivos
+- Dominios accedidos
+- Metadatos de conexiones
+- Tokens o cookies en tráfico no encriptado
+- Datos internos de aplicaciones
+
+Por eso, en este laboratorio usé solo mi propio entorno y no publiqué archivos `.pcapng`. Para la documentación pública, lo más seguro es publicar solo capturas de pantalla controladas y revisar si no hay datos sensibles en la pantalla.
+
+## 13. Conclusión
+
+En este laboratorio, utilicé Wireshark para capturar y analizar el tráfico de red entre mi MacBook y un servidor Linux.
+
+Comencé identificando la interfaz de red correcta, apliqué filtros por IP, capturé paquetes ICMP generados por ping, observé tráfico SSH encriptado, identifiqué el TCP three-way handshake y comparé una conexión normal con el tráfico generado por un escaneo Nmap.
+
+La conclusión principal fue:
+
+> El terminal muestra el comando. Wireshark muestra lo que ese comando genera en la red.
+
+Este laboratorio reforzó fundamentos importantes para la ciberseguridad, especialmente en áreas como Blue Team, SOC, seguridad de redes y análisis de tráfico.
+
+Entender paquetes, puertos, protocolos y conexiones es esencial para investigar incidentes, diagnosticar problemas y comprender cómo los sistemas se comunican en una red.

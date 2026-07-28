@@ -1,0 +1,619 @@
+---
+title: "Analizando logs de autenticación SSH en Linux"
+summary: "En este laboratorio, analicé logs de autenticación SSH en Ubuntu usando journalctl, identificando inicio de sesión exitoso, apertura y cierre de sesión, intento con contraseña incorrecta e IP de origen de la conexión."
+date: "2026-06-15"
+readTime: "12 min"
+status: "publicado"
+categories:
+  - home-lab
+  - linux
+  - logs
+  - soc
+  - ssh
+---
+
+Este laboratorio del DetonaDev Cyber Lab documenta el análisis de logs de autenticación SSH en una máquina Ubuntu.
+
+Después de configurar el acceso SSH entre el MacBook y el Ubuntu en el laboratorio anterior, el siguiente paso fue entender dónde quedan registrados esos accesos en Linux y cómo interpretar los eventos de autenticación.
+
+El objetivo fue practicar conceptos importantes para la ciberseguridad, administración Linux y SOC: logs, autenticación, sesión, inicio de sesión exitoso, falla de contraseña, IP de origen, usuario y análisis de eventos.
+
+Este artículo documenta no solo los comandos ejecutados, sino también el razonamiento utilizado para entender los registros generados por el servicio SSH.
+
+## 1. Objetivo del laboratorio
+
+El objetivo de este laboratorio fue analizar los logs generados por conexiones SSH en una máquina Ubuntu.
+
+En el laboratorio anterior, el acceso remoto vía SSH fue configurado con éxito entre un MacBook y un Ubuntu en la red local.
+
+Ahora, la pregunta principal fue:
+
+```text
+Cuando alguien accede a mi Linux vía SSH, ¿dónde queda registrado ese evento?
+```
+
+A partir de esta pregunta, el objetivo fue observar eventos como:
+
+- Servicio SSH activo
+- Inicio de sesión SSH exitoso
+- Apertura de sesión
+- Cierre de sesión
+- Intento de inicio de sesión con contraseña incorrecta
+- IP de origen de la conexión
+- Usuario utilizado en el acceso
+
+Este tipo de análisis es importante porque, en ciberseguridad, no basta con permitir o bloquear el acceso. También es necesario entender qué sucedió, cuándo sucedió, de dónde vino y cuál fue el resultado.
+
+## 2. Entorno utilizado
+
+El entorno utilizado fue el mismo del laboratorio anterior:
+
+```text
+Máquina cliente: MacBook Air
+Máquina servidor: Ubuntu 24.04.4 LTS
+Red: Wi-Fi local
+IP de Ubuntu: 192.168.1.78
+IP del MacBook: 192.168.1.4
+Servicio analizado: OpenSSH Server
+Proceso analizado: sshd
+Herramienta de logs: journalctl
+Puerto utilizado por SSH: 22/TCP
+```
+
+Ubuntu funcionó como servidor SSH.
+
+El MacBook fue usado como cliente para generar conexiones exitosas e intentos de autenticación con contraseña incorrecta.
+
+## 3. Conceptos involucrados
+
+Antes de analizar los logs, es importante entender los principales conceptos involucrados.
+
+### SSH
+
+SSH significa Secure Shell.
+
+Es un protocolo utilizado para acceder y administrar sistemas remotamente de forma segura.
+
+En entornos Linux, SSH es muy usado para:
+
+- Administrar servidores
+- Acceder a máquinas remotas
+- Ejecutar comandos remotamente
+- Realizar mantenimiento en sistemas
+- Gestionar entornos de infraestructura
+
+Por eso, los eventos SSH son importantes para la seguridad.
+
+Cuando alguien accede a un servidor por SSH, ese acceso necesita ser registrado.
+
+### sshd
+
+El sshd es el proceso servidor de SSH en Linux.
+
+Es responsable de aceptar conexiones SSH, validar la autenticación e iniciar sesiones para usuarios autenticados.
+
+El nombre sshd significa:
+
+```text
+SSH daemon
+```
+
+En Linux, un daemon es un proceso que se ejecuta en segundo plano.
+
+En este laboratorio, los eventos de autenticación fueron generados por el proceso:
+
+```text
+sshd
+```
+
+### Logs
+
+Los logs son registros de eventos generados por sistemas, aplicaciones y servicios.
+
+En seguridad, los logs ayudan a responder preguntas como:
+
+- ¿Quién accedió?
+- ¿Cuándo accedió?
+- ¿De dónde vino el acceso?
+- ¿Qué usuario fue utilizado?
+- ¿La autenticación funcionó o falló?
+- ¿Se abrió la sesión?
+- ¿Se cerró la sesión?
+
+Sin logs, resulta muy difícil investigar problemas o incidentes.
+
+### journalctl
+
+El journalctl es la herramienta utilizada para consultar logs registrados por systemd en Linux.
+
+En este laboratorio, usé journalctl para visualizar eventos de SSH.
+
+Ejemplo:
+
+```bash
+sudo journalctl -t sshd
+```
+
+Este comando muestra registros relacionados con el proceso sshd.
+
+### Inicio de sesión aceptado
+
+Un inicio de sesión aceptado indica que la autenticación funcionó.
+
+En los logs, esto aparece como:
+
+```text
+Accepted password
+```
+
+Este mensaje significa que el usuario introdujo una contraseña válida y se permitió el acceso.
+
+### Falla de autenticación
+
+Una falla de autenticación indica que el intento de inicio de sesión no fue aceptado.
+
+En los logs, esto puede aparecer como:
+
+```text
+Failed password
+```
+
+Este tipo de evento puede representar solo una contraseña mal escrita, pero también puede indicar un intento de acceso indebido o fuerza bruta.
+
+### Sesión abierta y sesión cerrada
+
+Después de que un inicio de sesión es aceptado, el sistema abre una sesión para el usuario.
+
+En los logs, esto aparece como:
+
+```text
+session opened
+```
+
+Cuando el usuario sale de la conexión SSH, aparece:
+
+```text
+session closed
+```
+
+Estos eventos ayudan a entender el ciclo completo de una conexión.
+
+## 4. Verificando si el servicio SSH estaba activo
+
+Antes de analizar los logs, confirmé que el servicio SSH estuviera activo en Ubuntu.
+
+Ejecuté:
+
+```bash
+sudo systemctl status ssh --no-pager
+```
+
+Este comando muestra el estado del servicio SSH.
+
+En el resultado, fue posible ver:
+
+```text
+Active: active (running)
+```
+
+Esto indica que el servicio SSH estaba en ejecución.
+
+También apareció:
+
+```text
+Server listening on 0.0.0.0 port 22
+Server listening on :: port 22
+```
+
+Esto muestra que SSH estaba escuchando conexiones en el puerto 22.
+
+<ArticleImage
+  src="/images/articles/analisando-logs-de-autenticacao-ssh-no-linux/01-ssh-service-active.png"
+  alt="Estado del servicio SSH en Ubuntu mostrando active running y puerto 22"
+  caption="Validación del servicio SSH activo y escuchando conexiones en el puerto 22 en Ubuntu."
+/>
+
+Esta etapa fue importante porque confirmó que había un servicio SSH activo para generar eventos de autenticación.
+
+## 5. Siguiendo logs SSH en tiempo real
+
+Después de confirmar que el SSH estaba activo, usé journalctl para seguir eventos de SSH en tiempo real.
+
+Ejecuté en Ubuntu:
+
+```bash
+sudo journalctl -f -t sshd
+```
+
+Este comando se puede dividir así:
+
+```text
+sudo          Ejecuta el comando con permisos administrativos.
+journalctl    Herramienta para visualizar logs de systemd.
+-f            Sigue nuevos eventos en tiempo real.
+-t sshd       Filtra los logs generados por el proceso sshd.
+```
+
+La opción -f es importante porque permite observar nuevos eventos a medida que ocurren.
+
+En la práctica, este comando dejó el terminal esperando nuevos registros de SSH.
+
+## 6. Generando un inicio de sesión SSH exitoso
+
+Con el terminal de Ubuntu siguiendo los logs en tiempo real, usé el MacBook para conectarme a Ubuntu vía SSH.
+
+En el MacBook, ejecuté:
+
+```bash
+ssh bruno-abreu@192.168.1.78
+```
+
+Este comando significa:
+
+```text
+Conectar vía SSH al usuario bruno-abreu de la máquina 192.168.1.78
+```
+
+Después de ingresar la contraseña correcta, el inicio de sesión fue aceptado.
+
+En Ubuntu, el log registró:
+
+```text
+Accepted password for bruno-abreu from 192.168.1.4 port 53539 ssh2
+```
+
+Esta línea contiene información importante:
+
+```text
+Accepted password       Inicio de sesión aceptado usando contraseña.
+bruno-abreu             Usuario autenticado.
+192.168.1.4             IP de origen de la conexión.
+port 53539              Puerto temporal usado por el cliente.
+ssh2                    Versión del protocolo SSH.
+```
+
+Este evento muestra que Ubuntu registró el inicio de sesión exitoso, incluyendo el usuario y la IP de origen.
+
+## 7. Identificando la apertura de la sesión
+
+Además del inicio de sesión aceptado, el sistema también registró la apertura de la sesión.
+
+El log mostró:
+
+```text
+pam_unix(sshd:session): session opened for user bruno-abreu
+```
+
+Este evento indica que, tras la autenticación, el sistema abrió una sesión para el usuario.
+
+Es importante entender la diferencia:
+
+```text
+Accepted password = la contraseña fue aceptada.
+session opened = se inició la sesión del usuario.
+```
+
+<ArticleImage
+  src="/images/articles/analisando-logs-de-autenticacao-ssh-no-linux/02-log-ssh-login-success-realtime.png"
+  alt="Log en tiempo real mostrando inicio de sesión SSH exitoso y apertura de sesión"
+  caption="Registro en tiempo real del inicio de sesión aceptado y apertura de sesión para el usuario bruno-abreu."
+/>
+
+En una investigación de seguridad, esta diferencia ayuda a confirmar que la autenticación pasó y se creó una sesión real en el sistema.
+
+## 8. Identificando el cierre de la sesión
+
+Después de probar el acceso SSH, cerré la sesión desde el MacBook.
+
+En el terminal de la sesión SSH, ejecuté:
+
+```bash
+exit
+```
+
+Al salir, Ubuntu registró eventos de desconexión y cierre de sesión.
+
+En los logs apareció:
+
+```text
+Disconnected from user bruno-abreu 192.168.1.4 port 53539
+```
+
+Y también:
+
+```text
+session closed for user bruno-abreu
+```
+
+Esto demostró que la conexión SSH se cerró correctamente.
+
+<ArticleImage
+  src="/images/articles/analisando-logs-de-autenticacao-ssh-no-linux/03-log-ssh-session-closed.png"
+  alt="Log mostrando desconexión y cierre de sesión SSH"
+  caption="Registro de desconexión y cierre de sesión del usuario bruno-abreu."
+/>
+
+Con esto, fue posible observar el ciclo completo de una conexión SSH:
+
+- Conexión iniciada
+- Contraseña aceptada
+- Sesión abierta
+- El usuario salió
+- Sesión cerrada
+- Conexión finalizada
+
+## 9. Generando un intento con contraseña incorrecta
+
+Para entender cómo aparece una falla de autenticación en los logs, hice un nuevo intento de conexión SSH desde el MacBook, pero introduje una contraseña incorrecta.
+
+En el MacBook, ejecuté nuevamente:
+
+```bash
+ssh bruno-abreu@192.168.1.78
+```
+
+Cuando el terminal solicitó la contraseña, introduje una contraseña incorrecta.
+
+En Ubuntu, el evento se registró así:
+
+```text
+Failed password for bruno-abreu from 192.168.1.4 port 53541 ssh2
+```
+
+Esta línea indica que hubo un intento de autenticación, pero la contraseña no fue aceptada.
+
+La lectura del evento es:
+
+```text
+Failed password        Contraseña incorrecta.
+bruno-abreu            Usuario usado en el intento.
+192.168.1.4            IP de origen del intento.
+port 53541             Puerto temporal usado por el cliente.
+ssh2                   Protocolo SSH utilizado.
+```
+
+Este evento es muy importante para la seguridad.
+
+<ArticleImage
+  src="/images/articles/analisando-logs-de-autenticacao-ssh-no-linux/04-log-ssh-failed-password.png"
+  alt="Log mostrando intento de autenticación SSH con contraseña incorrecta"
+  caption="Registro de falla de autenticación e intento de inicio de sesión con contraseña incorrecta."
+/>
+
+Una sola falla puede ser solo un error tipográfico. Sin embargo, varias fallas consecutivas pueden indicar:
+
+- Intento de fuerza bruta
+- Intento de acceso indebido
+- Uso de credenciales incorrectas
+- Enumeración de usuarios
+- Actividad sospechosa contra el servidor
+
+## 10. Creando un resumen de los eventos de autenticación
+
+Después de generar los eventos, usé un comando para filtrar solo los registros más importantes.
+
+Ejecuté:
+
+```bash
+sudo journalctl -t sshd --no-pager | grep -E "Accepted|Failed|session opened|session closed"
+```
+
+Este comando combina dos partes.
+
+La primera parte consulta los logs de sshd:
+
+```bash
+sudo journalctl -t sshd --no-pager
+```
+
+La segunda parte filtra eventos relevantes:
+
+```bash
+grep -E "Accepted|Failed|session opened|session closed"
+```
+
+El filtro busca por:
+
+```text
+Accepted          Inicio de sesión aceptado.
+Failed            Inicio de sesión fallido.
+session opened    Sesión abierta.
+session closed    Sesión cerrada.
+```
+
+El resultado mostró los eventos principales del laboratorio:
+
+```text
+Accepted password
+session opened
+session closed
+Failed password
+```
+
+<ArticleImage
+  src="/images/articles/analisando-logs-de-autenticacao-ssh-no-linux/05-resumo-eventos-ssh.png"
+  alt="Resumen filtrado de eventos de autenticación SSH con grep"
+  caption="Resumen de eventos de autenticación filtrados con grep mostrando Accepted, session opened, session closed y Failed."
+/>
+
+Este resumen facilita el análisis porque elimina registros menos importantes y destaca los eventos directamente relacionados con la autenticación.
+
+## 11. Problema encontrado
+
+Al principio, al intentar ver logs antiguos de SSH, solo aparecían eventos de inicio del servicio.
+
+El comando:
+
+```bash
+sudo journalctl -u ssh --no-pager
+```
+
+mostró registros como:
+
+```text
+Starting ssh.service
+Server listening on 0.0.0.0 port 22
+Started ssh.service
+```
+
+Pero no había eventos de inicio de sesión, falla o sesión.
+
+Esto sucedió porque aún no se había generado un nuevo evento de autenticación en ese momento.
+
+La solución fue generar eventos manualmente:
+
+- Inicio de sesión correcto desde el MacBook
+- Salida de la sesión SSH
+- Intento con contraseña incorrecta
+
+Después de eso, los logs empezaron a mostrar los eventos relevantes para el análisis.
+
+## 12. Diagnóstico
+
+El diagnóstico fue que el servicio SSH estaba funcionando y registrando correctamente los eventos de autenticación.
+
+Fue posible confirmar:
+
+- El servicio SSH estaba activo.
+- El servidor estaba escuchando en el puerto 22.
+- El inicio de sesión correcto se registró como Accepted password.
+- La apertura de la sesión se registró como session opened.
+- El cierre se registró como session closed.
+- El intento con contraseña incorrecta se registró como Failed password.
+- La IP de origen quedó registrada en los eventos.
+
+Esto demuestra que Ubuntu estaba generando logs útiles para el análisis de seguridad.
+
+## 13. Solución aplicada
+
+En este laboratorio, no había un error de configuración que corregir.
+
+La solución fue usar la herramienta correcta para visualizar los eventos correctos.
+
+El comando más útil para seguir eventos en tiempo real fue:
+
+```bash
+sudo journalctl -f -t sshd
+```
+
+El comando más útil para resumir eventos importantes fue:
+
+```bash
+sudo journalctl -t sshd --no-pager | grep -E "Accepted|Failed|session opened|session closed"
+```
+
+Con estos comandos, logré separar los eventos relevantes de autenticación del resto de registros del servicio SSH.
+
+## 14. Validación
+
+La validación se hizo observando los logs generados tras acciones reales.
+
+Primero, realicé un inicio de sesión correcto desde el MacBook.
+
+Ubuntu registró:
+
+```text
+Accepted password
+session opened
+```
+
+Luego, cerré la sesión.
+
+Ubuntu registró:
+
+```text
+session closed
+```
+
+Finalmente, hice un intento con contraseña incorrecta.
+
+Ubuntu registró:
+
+```text
+Failed password
+```
+
+Estos registros validaron que el sistema estaba capturando correctamente los eventos de autenticación SSH.
+
+## 15. Lo que aprendí
+
+En este laboratorio, aprendí que los logs de autenticación SSH son fundamentales para entender los accesos a una máquina Linux.
+
+También aprendí que un evento SSH puede tener varias etapas:
+
+- Intento de conexión
+- Autenticación
+- Apertura de sesión
+- Cierre de sesión
+- Falla de contraseña
+
+Además, entendí que los logs muestran información importante para la investigación:
+
+- Usuario utilizado
+- IP de origen
+- Puerto temporal del cliente
+- Resultado de la autenticación
+- Hora del evento
+- Estado de la sesión
+
+La lección principal fue:
+
+```text
+En seguridad, no basta con saber que el acceso funciona.
+Es necesario saber cómo se registra el acceso y cómo interpretar esos registros.
+```
+
+## 16. Relación con ciberseguridad y SOC
+
+Este laboratorio se conecta directamente con la ciberseguridad, especialmente con SOC y Security Operations.
+
+En un entorno real, los analistas de seguridad monitorean los logs para identificar comportamientos sospechosos.
+
+Los eventos de SSH pueden indicar:
+
+- Acceso administrativo legítimo
+- Intento de contraseña incorrecta
+- Fuerza bruta
+- Acceso fuera de horario esperado
+- Origen de conexión desconocido
+- Uso indebido de cuenta
+- Intento de movimiento lateral
+- Compromiso de credenciales
+
+Un analista SOC necesita revisar los logs y hacer preguntas como:
+
+- ¿Debería este usuario acceder a este servidor?
+- ¿Es conocida esta IP de origen?
+- ¿Hubo muchas fallas antes de un inicio de sesión exitoso?
+- ¿El acceso ocurrió en horario normal?
+- ¿Suele esta cuenta acceder a este servidor?
+- ¿Cuánto tiempo duró la sesión?
+
+Aunque sea un laboratorio simple en una red local, el razonamiento es el mismo que se usa en entornos corporativos:
+
+- Recolectar eventos
+- Filtrar registros relevantes
+- Identificar éxito y fracaso
+- Analizar origen y usuario
+- Documentar evidencias
+- Relacionar los logs con el riesgo de seguridad
+
+Este laboratorio fue un paso importante para salir de la configuración de acceso remoto y entrar en el análisis de eventos, que es una base esencial para SOC.
+
+## 17. Próximo paso
+
+El próximo paso será analizar los puertos y servicios expuestos utilizando Nmap.
+
+Después de entender que SSH está activo y que sus accesos quedan registrados en los logs, tiene sentido verificar cómo aparece la máquina Ubuntu para otro dispositivo en la red.
+
+La pregunta principal del próximo laboratorio será:
+
+```text
+¿Qué puertos y servicios están visibles en mi máquina Ubuntu dentro de la red local?
+```
+
+Esto llevará al próximo estudio del DetonaDev Cyber Lab:
+
+```text
+Usando Nmap para identificar puertos abiertos en un entorno de laboratorio
+```

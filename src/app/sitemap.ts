@@ -1,24 +1,60 @@
 import type { MetadataRoute } from 'next';
 import { siteConfig } from '@/data/site';
 import { getPublishedArticles } from '@/data/articles';
+import { locales } from '@/i18n/config';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const publishedArticles = getPublishedArticles();
-
-  const staticPages: MetadataRoute.Sitemap = [
-    { url: siteConfig.url, lastModified: new Date(), changeFrequency: 'weekly', priority: 1 },
-    { url: `${siteConfig.url}/lab`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.9 },
-    { url: `${siteConfig.url}/artigos`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${siteConfig.url}/sobre`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${siteConfig.url}/contato`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
+  // Base routes that exist in all languages
+  const baseRoutes = [
+    { path: '', priority: 1, changeFrequency: 'weekly' as const },
+    { path: '/lab', priority: 0.9, changeFrequency: 'weekly' as const },
+    { path: '/artigos', priority: 0.8, changeFrequency: 'weekly' as const },
+    { path: '/sobre', priority: 0.7, changeFrequency: 'monthly' as const },
+    { path: '/contato', priority: 0.5, changeFrequency: 'monthly' as const },
   ];
 
-  const articlePages: MetadataRoute.Sitemap = publishedArticles.map((article) => ({
-    url: `${siteConfig.url}/artigos/${article.slug}`,
-    lastModified: new Date(article.date),
-    changeFrequency: 'monthly' as const,
-    priority: 0.6,
-  }));
+  // Helper to build hreflang alternates for any given path
+  const buildAlternates = (path: string) => {
+    const languages: Record<string, string> = {};
+    locales.forEach((l) => {
+      languages[l] = `${siteConfig.url}/${l}${path}`;
+    });
+    languages['x-default'] = `${siteConfig.url}/en${path}`;
+    return { languages };
+  };
 
-  return [...staticPages, ...articlePages];
+  const sitemapEntries: MetadataRoute.Sitemap = [];
+
+  // 1. Static Pages
+  locales.forEach((locale) => {
+    baseRoutes.forEach(({ path, priority, changeFrequency }) => {
+      sitemapEntries.push({
+        url: `${siteConfig.url}/${locale}${path}`,
+        lastModified: new Date(),
+        changeFrequency,
+        priority,
+        alternates: buildAlternates(path),
+      });
+    });
+  });
+
+  // 2. Article Pages
+  // Note: we fetch articles for the 'pt' locale to get the canonical list of slugs.
+  // Then we map each slug across all locales.
+  const articles = getPublishedArticles('pt');
+  
+  locales.forEach((locale) => {
+    articles.forEach((article) => {
+      const path = `/artigos/${article.slug}`;
+      sitemapEntries.push({
+        url: `${siteConfig.url}/${locale}${path}`,
+        lastModified: new Date(article.date),
+        changeFrequency: 'monthly',
+        priority: 0.6,
+        alternates: buildAlternates(path),
+      });
+    });
+  });
+
+  return sitemapEntries;
 }

@@ -1,0 +1,123 @@
+---
+title: "Understanding IP, ports and firewall in practice with Ubuntu and UFW"
+summary: "A practical deep dive into managing firewall rules (UFW) in Linux, exploring how protocols and ports relate to protecting a network environment."
+date: "2026-06-15"
+readTime: "8 min"
+status: "publicado"
+categories:
+  - home-lab
+  - linux
+  - firewall
+---
+
+In this DetonaDev Cyber Lab, the goal was to explore in a practical way how IPs, ports, and firewall rules interact to protect or expose a Linux server.
+
+The firewall is the first line of defense for any server, and managing its rules correctly is fundamental to ensuring the security of hosted services. In this lab, I used UFW (Uncomplicated Firewall) on Ubuntu to understand how these rules work in practice.
+
+## 1. Lab objective
+
+The main objective of this lab was:
+- Understand the relationship between IP addresses and TCP/UDP ports.
+- Configure UFW on Ubuntu Linux.
+- Create traffic permission and blocking rules.
+- Test the effectiveness of the rules from another machine on the network.
+
+## 2. Environment used
+
+The lab was carried out using the following environment:
+- **Server:** Ubuntu 24.04.4 LTS (Target)
+- **Client:** MacBook Air (Attacker/Tester)
+- **Firewall Tool:** UFW (Uncomplicated Firewall)
+- **Testing Tools:** `ping`, `nc` (Netcat) and `telnet`.
+
+## 3. Concepts involved
+
+Before starting the configurations, it is essential to understand three fundamental concepts:
+
+- **IP Address:** The IP address works like the postal address of a machine on the network. It ensures that data packets find the correct path between the source and the destination.
+- **Ports:** If the IP is the address of the building, the port is the apartment number. Ports allow the operating system to direct network traffic to the correct application (e.g., port 22 for SSH, port 80 for HTTP).
+- **Firewall:** The firewall is the building's doorman. It checks all connections entering or leaving the server and decides whether they should be allowed or blocked based on a set of predefined rules.
+
+## 4. Step by step
+
+The first step was to check the current status of the firewall on Ubuntu. By default, UFW is usually disabled.
+
+```bash
+sudo ufw status
+```
+
+The result was `Status: inactive`.
+
+To ensure I wouldn't lose remote access before enabling the firewall, I added a rule allowing SSH traffic:
+
+```bash
+sudo ufw allow ssh
+```
+
+Then, I enabled the firewall:
+
+```bash
+sudo ufw enable
+```
+
+From that moment on, the firewall started blocking by default all incoming connections that did not have an explicit permission rule, ensuring the basic security of the server.
+
+To carry out the practical tests, I started a basic listening service on port 8080 of the server using Netcat:
+
+```bash
+nc -l -p 8080
+```
+
+And on the MacBook, I tried to connect to this port:
+
+```bash
+telnet 192.168.1.78 8080
+```
+
+## 5. Problem found
+
+When trying to connect on port 8080 from the MacBook, the connection was not established and kept waiting until it generated a *timeout* error.
+
+The server was listening on port 8080 (confirmed by the running Netcat), but the client machine could not reach it.
+
+## 6. Diagnosis
+
+To diagnose the problem, I checked the firewall rules on the server again:
+
+```bash
+sudo ufw status verbose
+```
+
+The command listed the active rules. Only port 22 (SSH) was configured to accept connections. Port 8080 had no defined rule and, since UFW's default behavior is to deny unknown incoming traffic (`Default: deny (incoming)`), the Netcat connection was being summarily blocked by the firewall before reaching the application.
+
+## 7. Solution applied
+
+The solution was to add a specific rule to allow traffic on port 8080. To apply the principle of least privilege, I created a rule that allowed connection only from the IP of my local network.
+
+```bash
+sudo ufw allow from 192.168.1.0/24 to any port 8080
+```
+
+After that, I checked the firewall status again to confirm the application of the rule:
+
+```bash
+sudo ufw status
+```
+
+The result now showed port 8080 allowed for the subnet `192.168.1.0/24`.
+
+## 8. Validation
+
+On the MacBook, I tried the connection again using Telnet:
+
+```bash
+telnet 192.168.1.78 8080
+```
+
+This time, the connection was accepted immediately. I typed a message in the MacBook terminal ("Connection test") and it appeared in the Ubuntu terminal where Netcat was listening. This confirmed that the traffic was successfully passing through the firewall.
+
+## 9. What I learned
+
+This practical lab reinforced the understanding that having an application listening on a port is not enough for it to be accessible on the network. The operating system (through the firewall) has the final say on the traffic that enters or leaves.
+
+In addition, I learned the importance of the default policy rule (Default Deny) and how to create granular rules in UFW (restricting by source IP) to reduce the server's attack surface. These fundamentals are essential for any professional intending to work in cybersecurity or systems administration areas.

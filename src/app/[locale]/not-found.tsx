@@ -1,8 +1,14 @@
 import Link from 'next/link';
 import { Shield, Home } from 'lucide-react';
 import { ScrollReveal } from '@/components/ui/scroll-reveal';
+// Note: not-found.tsx in App Router does not receive route params like `locale`.
+// So we must use a client component or rely on default text. Since not-found is a boundary,
+// the simplest approach for a static export is to use English as the universal fallback,
+// or we can use a client component to read the pathname.
+// Given we want standard static export, we'll use a generic multi-language message or English.
+// Let's use English by default since it's the fallback locale.
 
-export default function GlobalNotFound() {
+export default function NotFound() {
   return (
     <div className="min-h-[100dvh] flex items-center justify-center pt-20">
       <div className="container-narrow text-center">

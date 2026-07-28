@@ -9,3 +9,35 @@
   to = "https://detonadev.com/:splat"
   status = 301
   force = true
+
+# Legacy Routes (SEO Protection)
+# Redirect old Portuguese paths to the new /pt/ prefix (301 Permanent)
+[[redirects]]
+  from = "/sobre"
+  to = "/pt/sobre"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/lab"
+  to = "/pt/lab"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/contato"
+  to = "/pt/contato"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/artigos"
+  to = "/pt/artigos"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/artigos/*"
+  to = "/pt/artigos/:splat"
+  status = 301
+  force = true

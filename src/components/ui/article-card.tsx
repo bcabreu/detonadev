@@ -1,15 +1,19 @@
+'use client';
+
 import Link from 'next/link';
 import type { Article } from '@/data/articles';
-import { categories } from '@/data/categories';
+import { isValidCategory } from '@/data/categories';
 import { formatDate, cn } from '@/lib/utils';
 import { ArrowRight, Clock, Calendar } from 'lucide-react';
 import { Tag } from '@/components/ui/tag';
+import { useLocale } from '@/i18n/locale-context';
 
 interface ArticleCardProps {
   article: Article;
 }
 
 export function ArticleCard({ article }: ArticleCardProps) {
+  const { locale, dictionary: dict } = useLocale();
   const isDraft = article.status === 'rascunho';
 
   return (
@@ -25,14 +29,13 @@ export function ArticleCard({ article }: ArticleCardProps) {
         {/* Categories */}
         <div className="flex flex-wrap gap-2 mb-4">
           {article.categories.slice(0, 3).map((catSlug) => {
-            const cat = categories.find((c) => c.slug === catSlug);
-            return cat ? (
-              <Tag key={catSlug} label={cat.label} size="sm" />
-            ) : null;
+            if (!isValidCategory(catSlug)) return null;
+            const label = dict.categories[catSlug as keyof typeof dict.categories] || catSlug;
+            return <Tag key={catSlug} label={label} size="sm" />;
           })}
           {isDraft && (
             <span className="inline-flex items-center text-[0.625rem] font-mono uppercase tracking-wider px-2 py-1 text-[var(--color-status-progress)] border border-[rgba(245,158,11,0.3)] bg-[rgba(245,158,11,0.08)]">
-              Rascunho
+              {dict.status.draft}
             </span>
           )}
         </div>
@@ -52,7 +55,7 @@ export function ArticleCard({ article }: ArticleCardProps) {
           <div className="flex items-center gap-4 text-xs text-[var(--color-text-muted)]">
             <span className="inline-flex items-center gap-1.5">
               <Calendar size={12} strokeWidth={1.5} />
-              {formatDate(article.date)}
+              {formatDate(article.date, locale)}
             </span>
             <span className="inline-flex items-center gap-1.5">
               <Clock size={12} strokeWidth={1.5} />
@@ -61,10 +64,10 @@ export function ArticleCard({ article }: ArticleCardProps) {
           </div>
 
           <Link
-            href={`/artigos/${article.slug}`}
+            href={`/${locale}/artigos/${article.slug}`}
             className="inline-flex items-center gap-1.5 text-xs font-mono text-[var(--color-accent)] hover:gap-2.5 transition-all duration-300 no-underline"
           >
-            {isDraft ? 'Ver rascunho' : 'Ler artigo'}
+            {isDraft ? dict.common.viewDraft : dict.common.readArticle}
             <ArrowRight size={12} strokeWidth={1.5} />
           </Link>
         </div>
@@ -72,9 +75,9 @@ export function ArticleCard({ article }: ArticleCardProps) {
 
       {/* Full card clickable overlay */}
       <Link
-        href={`/artigos/${article.slug}`}
+        href={`/${locale}/artigos/${article.slug}`}
         className="absolute inset-0 z-10"
-        aria-label={`Ler: ${article.title}`}
+        aria-label={`${dict.common.readLabel} ${article.title}`}
       />
     </article>
   );

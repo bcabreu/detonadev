@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import { ArticleCard } from '@/components/ui/article-card';
-import { Tag } from '@/components/ui/tag';
 import { ScrollReveal } from '@/components/ui/scroll-reveal';
-import { categories } from '@/data/categories';
+import { categorySlugs } from '@/data/categories';
 import { Article } from '@/data/articles';
+import { useLocale } from '@/i18n/locale-context';
 
 interface ArticleListProps {
   initialArticles: Article[];
@@ -13,6 +13,7 @@ interface ArticleListProps {
 
 export function ArticleList({ initialArticles }: ArticleListProps) {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const { dictionary: dict } = useLocale();
 
   const filtered = activeCategory
     ? initialArticles.filter((a) => a.categories.includes(activeCategory))
@@ -24,30 +25,30 @@ export function ArticleList({ initialArticles }: ArticleListProps) {
         <ScrollReveal>
           <div className="mb-12">
             <span className="text-xs font-mono uppercase tracking-widest text-[var(--color-text-muted)] block mb-4">
-              Filtrar por categoria
+              {dict.common.filterByCategory}
             </span>
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setActiveCategory(null)}
                 className={`px-3 py-1.5 text-xs font-mono border rounded-sm transition-all ${
                   activeCategory === null
-                    ? 'border-[var(--color-accent)] bg-[rgba(245,158,11,0.1)] text-[var(--color-accent)]'
+                    ? 'border-[var(--color-accent)] bg-[rgba(52,211,153,0.1)] text-[var(--color-accent)]'
                     : 'border-[rgba(255,255,255,0.06)] bg-[var(--color-bg-elevated)] text-[var(--color-text-muted)] hover:border-[rgba(255,255,255,0.15)] hover:text-[var(--color-text-secondary)]'
                 }`}
               >
-                Todos
+                {dict.common.all}
               </button>
-              {categories.map((c) => (
+              {categorySlugs.map((slug) => (
                 <button
-                  key={c.slug}
-                  onClick={() => setActiveCategory(c.slug)}
+                  key={slug}
+                  onClick={() => setActiveCategory(slug)}
                   className={`px-3 py-1.5 text-xs font-mono border rounded-sm transition-all ${
-                    activeCategory === c.slug
-                      ? 'border-[var(--color-accent)] bg-[rgba(245,158,11,0.1)] text-[var(--color-accent)]'
+                    activeCategory === slug
+                      ? 'border-[var(--color-accent)] bg-[rgba(52,211,153,0.1)] text-[var(--color-accent)]'
                       : 'border-[rgba(255,255,255,0.06)] bg-[var(--color-bg-elevated)] text-[var(--color-text-muted)] hover:border-[rgba(255,255,255,0.15)] hover:text-[var(--color-text-secondary)]'
                   }`}
                 >
-                  {c.label}
+                  {dict.categories[slug as keyof typeof dict.categories] || slug}
                 </button>
               ))}
             </div>
