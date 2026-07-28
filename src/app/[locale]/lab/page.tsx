@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { siteConfig } from '@/data/site';
 import { ScrollReveal } from '@/components/ui/scroll-reveal';
 import { labStages } from '@/data/lab-stages';
@@ -209,60 +210,120 @@ export default async function LabPage({ params }: LabPageProps) {
                     </div>
 
                     {/* Card */}
-                    <div className="flex-1 bg-[var(--color-bg-surface)] border border-[rgba(255,255,255,0.06)] p-6 md:p-8 transition-colors group-hover:border-[rgba(255,255,255,0.12)]">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-                        <div className="flex items-center gap-3">
-                          <span className="md:hidden text-xs font-mono font-bold text-[var(--color-text-muted)] border border-[rgba(255,255,255,0.1)] px-2 py-0.5">
-                            {dict.lab.stageLabel} {stage.id.toString().padStart(2, '0')}
-                          </span>
-                          <h3 className="text-base md:text-lg font-semibold">
-                            {stageDict?.title ?? `Stage ${stage.id}`}
-                          </h3>
-                        </div>
+                    {stage.articleSlug ? (
+                      <Link
+                        href={`/${locale}/artigos/${stage.articleSlug}`}
+                        className="flex-1 bg-[var(--color-bg-surface)] border border-[rgba(255,255,255,0.06)] p-6 md:p-8 transition-all hover:bg-[rgba(255,255,255,0.02)] group-hover:border-[rgba(255,255,255,0.2)] cursor-pointer block"
+                      >
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                          <div className="flex items-center gap-3">
+                            <span className="md:hidden text-xs font-mono font-bold text-[var(--color-text-muted)] border border-[rgba(255,255,255,0.1)] px-2 py-0.5">
+                              {dict.lab.stageLabel} {stage.id.toString().padStart(2, '0')}
+                            </span>
+                            <h3 className="text-base md:text-lg font-semibold group-hover:text-[var(--color-accent)] transition-colors">
+                              {stageDict?.title ?? `Stage ${stage.id}`}
+                            </h3>
+                          </div>
 
-                        {/* Status Badge */}
-                        <div
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[0.65rem] font-mono uppercase tracking-widest border"
-                          style={{
-                            color:
-                              stage.status === 'documentado'
-                                ? 'var(--color-status-done)'
-                                : stage.status === 'em-andamento'
-                                  ? 'var(--color-status-progress)'
-                                  : 'var(--color-status-planned)',
-                            borderColor:
-                              stage.status === 'documentado'
-                                ? 'rgba(16,185,129,0.3)'
-                                : stage.status === 'em-andamento'
-                                  ? 'rgba(245,158,11,0.3)'
-                                  : 'rgba(255,255,255,0.1)',
-                            backgroundColor:
-                              stage.status === 'documentado'
-                                ? 'rgba(16,185,129,0.05)'
-                                : stage.status === 'em-andamento'
-                                  ? 'rgba(245,158,11,0.05)'
-                                  : 'transparent',
-                          }}
-                        >
-                          <span
-                            className="w-1.5 h-1.5 rounded-full"
+                          {/* Status Badge */}
+                          <div
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[0.65rem] font-mono uppercase tracking-widest border"
                             style={{
-                              backgroundColor:
+                              color:
                                 stage.status === 'documentado'
                                   ? 'var(--color-status-done)'
                                   : stage.status === 'em-andamento'
                                     ? 'var(--color-status-progress)'
                                     : 'var(--color-status-planned)',
+                              borderColor:
+                                stage.status === 'documentado'
+                                  ? 'rgba(16,185,129,0.3)'
+                                  : stage.status === 'em-andamento'
+                                    ? 'rgba(245,158,11,0.3)'
+                                    : 'rgba(255,255,255,0.1)',
+                              backgroundColor:
+                                stage.status === 'documentado'
+                                  ? 'rgba(16,185,129,0.05)'
+                                  : stage.status === 'em-andamento'
+                                    ? 'rgba(245,158,11,0.05)'
+                                    : 'transparent',
                             }}
-                          />
-                          {statusLabel(stage.status)}
+                          >
+                            <span
+                              className="w-1.5 h-1.5 rounded-full"
+                              style={{
+                                backgroundColor:
+                                  stage.status === 'documentado'
+                                    ? 'var(--color-status-done)'
+                                    : stage.status === 'em-andamento'
+                                      ? 'var(--color-status-progress)'
+                                      : 'var(--color-status-planned)',
+                              }}
+                            />
+                            {statusLabel(stage.status)}
+                          </div>
                         </div>
-                      </div>
 
-                      <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
-                        {stageDict?.description ?? 'No description.'}
-                      </p>
-                    </div>
+                        <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed group-hover:text-[var(--color-text)] transition-colors">
+                          {stageDict?.description ?? 'No description.'}
+                        </p>
+                      </Link>
+                    ) : (
+                      <div className="flex-1 bg-[var(--color-bg-surface)] border border-[rgba(255,255,255,0.06)] p-6 md:p-8 transition-colors group-hover:border-[rgba(255,255,255,0.12)]">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                          <div className="flex items-center gap-3">
+                            <span className="md:hidden text-xs font-mono font-bold text-[var(--color-text-muted)] border border-[rgba(255,255,255,0.1)] px-2 py-0.5">
+                              {dict.lab.stageLabel} {stage.id.toString().padStart(2, '0')}
+                            </span>
+                            <h3 className="text-base md:text-lg font-semibold">
+                              {stageDict?.title ?? `Stage ${stage.id}`}
+                            </h3>
+                          </div>
+
+                          {/* Status Badge */}
+                          <div
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[0.65rem] font-mono uppercase tracking-widest border"
+                            style={{
+                              color:
+                                stage.status === 'documentado'
+                                  ? 'var(--color-status-done)'
+                                  : stage.status === 'em-andamento'
+                                    ? 'var(--color-status-progress)'
+                                    : 'var(--color-status-planned)',
+                              borderColor:
+                                stage.status === 'documentado'
+                                  ? 'rgba(16,185,129,0.3)'
+                                  : stage.status === 'em-andamento'
+                                    ? 'rgba(245,158,11,0.3)'
+                                    : 'rgba(255,255,255,0.1)',
+                              backgroundColor:
+                                stage.status === 'documentado'
+                                  ? 'rgba(16,185,129,0.05)'
+                                  : stage.status === 'em-andamento'
+                                    ? 'rgba(245,158,11,0.05)'
+                                    : 'transparent',
+                            }}
+                          >
+                            <span
+                              className="w-1.5 h-1.5 rounded-full"
+                              style={{
+                                backgroundColor:
+                                  stage.status === 'documentado'
+                                    ? 'var(--color-status-done)'
+                                    : stage.status === 'em-andamento'
+                                      ? 'var(--color-status-progress)'
+                                      : 'var(--color-status-planned)',
+                              }}
+                            />
+                            {statusLabel(stage.status)}
+                          </div>
+                        </div>
+
+                        <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
+                          {stageDict?.description ?? 'No description.'}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 );
               })}
