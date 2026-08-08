@@ -120,8 +120,7 @@ export default async function HomePage({ params }: HomePageProps) {
                 {siteConfig.author.resumeUrl && (
                   <a
                     href={siteConfig.author.resumeUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    download="Curriculo_Bruno_Abreu_Cybersecurity.pdf"
                     className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium border border-[rgba(255,255,255,0.06)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:border-[rgba(255,255,255,0.12)] transition-all no-underline"
                   >
                     <FileText size={14} strokeWidth={1.5} />

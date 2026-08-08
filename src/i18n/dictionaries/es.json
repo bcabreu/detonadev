@@ -32,15 +32,15 @@
   "meta": {
     "siteTitle": "DetonaDev Cyber Lab",
     "siteDescription": "Estudios prácticos de ciberseguridad, Linux, redes, SSH, firewall, logs, SOC y seguridad de la información documentados por Bruno Abreu.",
-    "authorRole": "Graduado en Sistemas de Información y Economía — En transición a Ciberseguridad"
+    "authorRole": "Desarrollador Full-Stack enfocado en Ciberseguridad, AppSec y SOC"
   },
   "home": {
     "eyebrow": "Cybersecurity Lab",
     "heroTitle1": "DetonaDev",
     "heroTitle2": "Cyber Lab",
-    "authorBio": "Por Bruno Abreu — graduado en Sistemas de Información, en transición a Ciberseguridad y SOC.",
+    "authorBio": "Por Bruno Abreu — desarrollador full-stack y graduado en Sistemas de Información, enfocado en Ciberseguridad y SOC.",
     "heroDescription": "Laboratorio público de estudios prácticos en ciberseguridad, Linux, redes, SOC, logs, firewall y seguridad de la información.",
-    "heroSubtext": "Este sitio documenta mi transición al área de ciberseguridad a través de laboratorios prácticos, estudios técnicos y registros reales de aprendizaje. El objetivo es transformar la teoría en práctica y construir una base sólida para trabajar en Seguridad de la Información y SOC.",
+    "heroSubtext": "Este sitio documenta mis estudios de ciberseguridad a través de laboratorios prácticos, estudios técnicos y registros reales de aprendizaje. Mi experiencia en desarrollo ayuda a conectar seguridad, arquitectura, autenticación y protección de datos con la práctica de Seguridad de la Información y SOC.",
     "viewLab": "Ver Cybersecurity Home Lab",
     "readArticles": "Leer artículos técnicos",
     "labEyebrow": "Laboratorio",
@@ -95,15 +95,15 @@
   "about": {
     "eyebrow": "Acerca",
     "title": "Bruno Abreu",
-    "subtitle": "Graduado en Sistemas de Información y Economía, en transición al área de Ciberseguridad.",
-    "bio1": "Soy Bruno Abreu, graduado en Sistemas de Información y Economía, en transición al área de Ciberseguridad. Actualmente estudio los fundamentos de la seguridad de la información y me estoy preparando para la certificación CompTIA Security+.",
+    "subtitle": "Desarrollador Full-Stack y graduado en Sistemas de Información y Economía, enfocado en Ciberseguridad, AppSec y SOC.",
+    "bio1": "Soy Bruno Abreu, desarrollador full-stack y graduado en Sistemas de Información y Economía, enfocado en Ciberseguridad, AppSec y SOC. Completé el ISC2 Certified in Cybersecurity (CC) Official Training y me estoy preparando para el examen CompTIA Security+.",
     "bio2": "Creé el DetonaDev Cyber Lab para documentar mis estudios prácticos en Linux, redes, firewall, logs, SOC, respuesta a incidentes y herramientas usadas en ambientes de seguridad. La propuesta es registrar el proceso de aprendizaje de forma transparente, técnica y objetiva, mostrando no solo comandos, sino también el razonamiento detrás de cada configuración, diagnóstico y solución.",
-    "bio3": "Mi experiencia anterior incluye proyectos web, automatización, aplicaciones publicadas y tecnología aplicada a negocios. Esta experiencia complementa mi transición a ciberseguridad con una visión práctica de cómo funcionan los sistemas, dónde pueden fallar y cómo proteger información en ambientes reales.",
+    "bio3": "Mi experiencia profesional incluye proyectos web, automatización, aplicaciones publicadas y tecnología aplicada a negocios. Esta experiencia fortalece mis estudios en ciberseguridad con una visión práctica de cómo funcionan los sistemas, dónde pueden fallar y cómo proteger información en ambientes reales.",
     "educationTitle": "Formación",
     "education1": "Sistemas de Información",
     "education2": "Economía",
-    "certTitle": "Certificación en progreso",
-    "certValue": "CompTIA Security+",
+    "certTitle": "Formación y preparación",
+    "certValue": "ISC2 CC Official Training - completado | CompTIA Security+ - en preparación",
     "interestsTitle": "Áreas de interés",
     "interests": ["SOC", "Seguridad de la Información", "Linux", "Redes", "Logs", "Control de Acceso", "Respuesta a Incidentes", "Seguridad Operacional", "Firewall", "SIEM"]
   },

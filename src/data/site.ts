@@ -8,11 +8,11 @@ export const siteConfig = {
 
   author: {
     name: 'Bruno Abreu',
-    role: 'Graduado em Sistemas de Informação e Economia — Em transição para Cibersegurança',
+    role: 'Desenvolvedor Full-Stack com foco em Cibersegurança, AppSec e SOC',
     email: 'bcabreu@icloud.com',
     linkedin: 'https://www.linkedin.com/in/bcabreu',
     github: '', // Manter vazio para esconder o link na UI
-    resumeUrl: '/curriculo.pdf', // Adicione o caminho do PDF ou link do drive para habilitar o botão "Currículo"
+    resumeUrl: '/curriculo.pdf',
   },
 
   nav: [

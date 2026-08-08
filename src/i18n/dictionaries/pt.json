@@ -32,15 +32,15 @@
   "meta": {
     "siteTitle": "DetonaDev Cyber Lab",
     "siteDescription": "Estudos práticos de cibersegurança, Linux, redes, SSH, firewall, logs, SOC e segurança da informação documentados por Bruno Abreu.",
-    "authorRole": "Graduado em Sistemas de Informação e Economia — Em transição para Cibersegurança"
+    "authorRole": "Desenvolvedor Full-Stack com foco em Cibersegurança, AppSec e SOC"
   },
   "home": {
     "eyebrow": "Cybersecurity Lab",
     "heroTitle1": "DetonaDev",
     "heroTitle2": "Cyber Lab",
-    "authorBio": "Por Bruno Abreu — graduado em Sistemas de Informação, em transição para Cibersegurança e SOC.",
+    "authorBio": "Por Bruno Abreu — desenvolvedor full-stack e graduado em Sistemas de Informação, com foco em Cibersegurança e SOC.",
     "heroDescription": "Laboratório público de estudos práticos em cibersegurança, Linux, redes, SOC, logs, firewall e segurança da informação.",
-    "heroSubtext": "Este site documenta minha transição para a área de cibersegurança por meio de laboratórios práticos, estudos técnicos e registros reais de aprendizado. O objetivo é transformar teoria em prática e construir uma base sólida para atuar em Segurança da Informação e SOC.",
+    "heroSubtext": "Este site documenta meus estudos em cibersegurança por meio de laboratórios práticos, estudos técnicos e registros reais de aprendizado. Minha experiência em desenvolvimento ajuda a conectar segurança, arquitetura, autenticação e proteção de dados à prática de Segurança da Informação e SOC.",
     "viewLab": "Ver Cybersecurity Home Lab",
     "readArticles": "Ler artigos técnicos",
     "labEyebrow": "Laboratório",
@@ -95,15 +95,15 @@
   "about": {
     "eyebrow": "Sobre",
     "title": "Bruno Abreu",
-    "subtitle": "Graduado em Sistemas de Informação e Economia, em transição para a área de Cibersegurança.",
-    "bio1": "Sou Bruno Abreu, graduado em Sistemas de Informação e Economia, em transição para a área de Cibersegurança. Atualmente estudo os fundamentos da segurança da informação e estou em preparação para a certificação CompTIA Security+.",
+    "subtitle": "Desenvolvedor Full-Stack e graduado em Sistemas de Informação e Economia, com foco em Cibersegurança, AppSec e SOC.",
+    "bio1": "Sou Bruno Abreu, desenvolvedor full-stack e graduado em Sistemas de Informação e Economia, com foco em Cibersegurança, AppSec e SOC. Concluí o ISC2 Certified in Cybersecurity (CC) Official Training e estou em preparação para o exame CompTIA Security+.",
     "bio2": "Criei o DetonaDev Cyber Lab para documentar meus estudos práticos em Linux, redes, firewall, logs, SOC, resposta a incidentes e ferramentas usadas em ambientes de segurança. A proposta é registrar o processo de aprendizado de forma transparente, técnica e objetiva, mostrando não apenas comandos, mas também o raciocínio por trás de cada configuração, diagnóstico e solução.",
-    "bio3": "Minha experiência anterior inclui projetos web, automação, aplicativos publicados e tecnologia aplicada a negócios. Essa bagagem complementa minha transição para cibersegurança com uma visão prática de como sistemas funcionam, onde podem falhar e como proteger informações em ambientes reais.",
+    "bio3": "Minha experiência profissional inclui projetos web, automação, aplicativos publicados e tecnologia aplicada a negócios. Essa bagagem fortalece meus estudos em cibersegurança com uma visão prática de como sistemas funcionam, onde podem falhar e como proteger informações em ambientes reais.",
     "educationTitle": "Formação",
     "education1": "Sistemas de Informação",
     "education2": "Economia",
-    "certTitle": "Certificação em progresso",
-    "certValue": "CompTIA Security+",
+    "certTitle": "Treinamentos e preparação",
+    "certValue": "ISC2 CC Official Training - concluído | CompTIA Security+ - em preparação",
     "interestsTitle": "Áreas de interesse",
     "interests": ["SOC", "Segurança da Informação", "Linux", "Redes", "Logs", "Controle de Acesso", "Resposta a Incidentes", "Segurança Operacional", "Firewall", "SIEM"]
   },

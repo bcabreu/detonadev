@@ -61,10 +61,11 @@ export default async function ContatoPage({ params }: ContatoPageProps) {
       isExternal: true,
     },
     {
-      label: dict.contact.resume,
+      label: dict.contact.downloadResume,
       href: siteConfig.author.resumeUrl,
       icon: FileText,
-      isExternal: true,
+      isExternal: false,
+      download: 'Curriculo_Bruno_Abreu_Cybersecurity.pdf',
     },
   ].filter((l) => l.href);
 
@@ -103,6 +104,7 @@ export default async function ContatoPage({ params }: ContatoPageProps) {
                   href={link.href}
                   target={link.isExternal ? '_blank' : undefined}
                   rel={link.isExternal ? 'noopener noreferrer' : undefined}
+                  download={link.download}
                   className="reveal flex items-center p-6 border border-[rgba(255,255,255,0.06)] bg-[var(--color-bg-surface)] hover:border-[var(--color-accent)] transition-colors group no-underline"
                 >
                   <div className="w-10 h-10 flex items-center justify-center bg-[rgba(255,255,255,0.02)] mr-4 group-hover:bg-[rgba(16,185,129,0.1)] transition-colors">
